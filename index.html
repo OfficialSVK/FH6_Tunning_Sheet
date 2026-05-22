@@ -3,774 +3,918 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FH6 Build Guide</title>
+<title>FH6 // Garage</title>
 <style>
-:root {
-  --bg:#0d0f14; --bg2:#141720; --bg3:#1a1e2a; --bg4:#1f2335;
-  --border:#2a2f3d; --border2:#3a4055;
-  --text:#e8eaf0; --muted:#6b7290; --hint:#4a5070;
-  --accent:#00e5ff; --accent2:#ff6b35; --accent3:#a78bfa;
-  --green:#00c896; --yellow:#f5c842; --red:#ff4d6d; --blue:#3b82f6;
-  --mono:'Courier New',monospace; --sans:'Segoe UI',system-ui,sans-serif;
+:root{
+  --bg:#0d0f14;--bg2:#141720;--bg3:#1a1e2a;--bg4:#222840;
+  --border:#252b3a;--border2:#353d55;
+  --text:#e8eaf0;--muted:#6b7290;--hint:#3a4060;
+  --accent:#00e5ff;--accent2:#ff6b35;--accent3:#a78bfa;
+  --green:#00c896;--yellow:#f5c842;--red:#ff4d6d;
+  --mono:'Courier New',monospace;--sans:'Segoe UI',system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px;min-height:100vh}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
 
-/* NAV */
-.nav{background:var(--bg2);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50}
-.nav-logo{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:.08em;white-space:nowrap}
-.nav-logo span{color:var(--muted)}
-.nav-steps{display:flex;gap:4px;flex:1;overflow-x:auto;padding:4px 0}
-.nav-steps::-webkit-scrollbar{height:0}
-.step-pill{font-size:11px;padding:4px 12px;border-radius:20px;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:var(--mono);white-space:nowrap;transition:all .15s;background:transparent}
-.step-pill:hover{border-color:var(--border2);color:var(--text)}
-.step-pill.active{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
-.step-pill.done{border-color:var(--green);color:var(--green)}
-.nav-reset{font-size:11px;padding:4px 10px;border-radius:4px;border:1px solid var(--border);color:var(--muted);cursor:pointer;background:transparent;font-family:var(--mono);white-space:nowrap}
-.nav-reset:hover{border-color:var(--red);color:var(--red)}
-
-/* LAYOUT */
-.layout{display:grid;grid-template-columns:320px 1fr;height:calc(100vh - 52px);overflow:hidden}
-@media(max-width:720px){.layout{grid-template-columns:1fr;height:auto}}
-
-/* SIDEBAR */
-.sidebar{background:var(--bg2);border-right:1px solid var(--border);overflow-y:auto;padding:20px 16px}
-.sidebar::-webkit-scrollbar{width:4px}
-.sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
-
-.sidebar-section{margin-bottom:20px}
-.ss-label{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
-.choice-btn{width:100%;text-align:left;padding:10px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg3);color:var(--text);cursor:pointer;font-size:13px;font-family:var(--sans);margin-bottom:6px;transition:all .15s;display:flex;align-items:center;justify-content:space-between;gap:8px}
-.choice-btn:hover{border-color:var(--border2);background:var(--bg4)}
-.choice-btn.selected{border-color:var(--accent);background:rgba(0,229,255,.06);color:var(--accent)}
-.choice-btn .cb-sub{font-size:11px;color:var(--muted);display:block;margin-top:2px;font-family:var(--mono)}
-.choice-btn.selected .cb-sub{color:rgba(0,229,255,.6)}
-.choice-tick{color:var(--green);font-size:14px;opacity:0;transition:opacity .15s}
-.choice-btn.selected .choice-tick{opacity:1}
-
-.summary-card{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px}
-.sum-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px}
-.sum-row:last-child{margin-bottom:0}
-.sum-key{color:var(--muted);font-family:var(--mono)}
-.sum-val{color:var(--accent);font-family:var(--mono);font-weight:700}
-.sum-val.na{color:var(--hint)}
-
-.pi-bar-wrap{margin-top:12px}
-.pi-label{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
-.pi-label span{color:var(--muted);font-family:var(--mono)}
-.pi-label strong{color:var(--yellow);font-family:var(--mono)}
-.pi-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-.pi-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--green),var(--yellow),var(--red));transition:width .4s}
-
-/* MAIN */
-.main{overflow-y:auto;padding:28px 32px}
-.main::-webkit-scrollbar{width:6px}
-.main::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-@media(max-width:720px){.main{padding:16px}}
-
-.step-header{margin-bottom:24px}
-.step-num{font-family:var(--mono);font-size:11px;color:var(--accent);letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
-.step-title{font-size:22px;font-weight:600;color:var(--text);margin-bottom:8px}
-.step-desc{font-size:14px;color:var(--muted);line-height:1.7;max-width:680px}
-
-/* GUIDE BLOCKS */
-.guide-block{background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:16px;overflow:hidden}
-.gb-head{background:var(--bg3);padding:12px 16px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
-.gb-icon{font-size:18px;color:var(--accent);width:24px;text-align:center}
-.gb-title{font-family:var(--mono);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
-.gb-badge{margin-left:auto;font-size:10px;padding:2px 8px;border-radius:10px;font-family:var(--mono);font-weight:700}
-.badge-must{background:rgba(255,77,109,.15);color:var(--red);border:1px solid rgba(255,77,109,.3)}
-.badge-rec{background:rgba(0,200,150,.12);color:var(--green);border:1px solid rgba(0,200,150,.3)}
-.badge-opt{background:rgba(107,114,144,.15);color:var(--muted);border:1px solid var(--border)}
-.gb-body{padding:16px}
-.gb-body p{font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:10px}
-.gb-body p:last-child{margin-bottom:0}
-.gb-body strong{color:var(--text);font-weight:500}
-.gb-body code{color:var(--accent);font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:12px}
-
-/* UPGRADE ORDER */
-.upgrade-chain{display:flex;align-items:center;gap:0;flex-wrap:wrap;margin:12px 0}
-.uc-item{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 14px;font-size:12px;font-family:var(--mono);color:var(--text);white-space:nowrap}
-.uc-item.priority{border-color:var(--accent2);color:var(--accent2)}
-.uc-arrow{color:var(--hint);padding:0 6px;font-size:16px}
-
-/* TUNE TABLE */
-.tune-table{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px}
-.tune-table th{text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.07em;padding:6px 10px;border-bottom:1px solid var(--border)}
-.tune-table td{padding:8px 10px;border-bottom:1px solid rgba(42,47,61,.6);vertical-align:top}
-.tune-table tr:last-child td{border-bottom:none}
-.tune-table .t-setting{color:var(--text);font-weight:500}
-.tune-table .t-val{color:var(--accent);font-family:var(--mono);font-weight:700}
-.tune-table .t-why{color:var(--muted);line-height:1.5}
-
-/* TIP BOX */
-.tip-box{background:rgba(0,229,255,.05);border:1px solid rgba(0,229,255,.2);border-left:3px solid var(--accent);border-radius:4px;padding:10px 14px;margin-top:10px;font-size:12px;color:var(--muted);line-height:1.6}
-.tip-box strong{color:var(--accent);font-family:var(--mono)}
-.warn-box{background:rgba(245,200,66,.05);border:1px solid rgba(245,200,66,.2);border-left:3px solid var(--yellow);border-radius:4px;padding:10px 14px;margin-top:10px;font-size:12px;color:var(--muted);line-height:1.6}
-.warn-box strong{color:var(--yellow);font-family:var(--mono)}
-
-/* SLIDER DEMO */
-.slider-demo{margin:12px 0}
-.sd-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
-.sd-label{font-size:11px;color:var(--muted);font-family:var(--mono);min-width:100px}
-.sd-track{flex:1;height:4px;background:var(--border);border-radius:2px;position:relative}
-.sd-fill{height:100%;border-radius:2px;position:absolute;left:0}
-.sd-thumb{width:14px;height:14px;border-radius:50%;position:absolute;top:-5px;transform:translateX(-50%);border:2px solid var(--bg2);cursor:default}
-.sd-val{font-size:12px;font-family:var(--mono);color:var(--accent);min-width:40px;text-align:right}
-
-/* COMPARISON GRID */
-.cmp-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:8px}
-.cmp-card{background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:10px 12px;cursor:pointer;transition:all .15s}
-.cmp-card:hover{border-color:var(--border2)}
-.cmp-card.best{border-color:var(--green)}
-.cmp-name{font-size:12px;font-weight:500;color:var(--text);margin-bottom:4px}
-.cmp-sub{font-size:11px;color:var(--muted);line-height:1.4}
-.cmp-tag{font-size:10px;font-family:var(--mono);padding:2px 6px;border-radius:3px;margin-top:6px;display:inline-block}
-.tag-best{background:rgba(0,200,150,.15);color:var(--green)}
-.tag-drift{background:rgba(255,107,53,.15);color:var(--accent2)}
-.tag-street{background:rgba(0,229,255,.12);color:var(--accent)}
-.tag-drag{background:rgba(163,139,250,.15);color:var(--accent3)}
-
-/* CHECKLIST */
-.checklist{list-style:none;margin-top:8px}
-.cl-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:4px;margin-bottom:4px;font-size:13px;color:var(--muted);cursor:pointer;transition:background .1s}
-.cl-item:hover{background:var(--bg3)}
-.cl-item input[type=checkbox]{accent-color:var(--accent);width:15px;height:15px;flex-shrink:0;margin-top:1px;cursor:pointer}
-.cl-item.checked-item{color:var(--hint);text-decoration:line-through}
-
-/* NAV BUTTONS */
-.nav-btns{display:flex;gap:10px;margin-top:28px;padding-top:20px;border-top:1px solid var(--border)}
-.btn{padding:8px 20px;border-radius:6px;border:1px solid var(--border2);background:transparent;color:var(--text);font-size:13px;cursor:pointer;font-family:var(--mono);letter-spacing:.04em;transition:all .15s}
+/* ── TOPBAR ── */
+.topbar{height:50px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 18px;gap:10px;z-index:60;flex-shrink:0}
+.tb-logo{font-family:var(--mono);font-size:13px;color:var(--accent);letter-spacing:.08em;white-space:nowrap}
+.tb-logo span{color:var(--muted)}
+.tb-tabs{display:flex;gap:3px;margin-left:6px}
+.tab-btn{font-size:12px;padding:5px 14px;border-radius:4px;border:1px solid transparent;color:var(--muted);cursor:pointer;font-family:var(--mono);background:transparent;transition:all .15s;white-space:nowrap}
+.tab-btn:hover{color:var(--text);border-color:var(--border2)}
+.tab-btn.active{background:var(--accent);color:#000;font-weight:700;border-color:var(--accent)}
+.tb-spacer{flex:1}
+.tb-actions{display:flex;gap:6px;align-items:center}
+.btn{background:transparent;border:1px solid var(--border2);color:var(--text);padding:5px 13px;border-radius:4px;font-size:12px;cursor:pointer;font-family:var(--mono);transition:all .15s;white-space:nowrap}
 .btn:hover{border-color:var(--accent);color:var(--accent)}
-.btn.primary{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
-.btn.primary:hover{opacity:.87}
-.btn:disabled{opacity:.3;cursor:default}
+.btn.pri{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+.btn.pri:hover{opacity:.85}
+.btn.suc{border-color:var(--green);color:var(--green)}
+.btn.suc:hover{background:var(--green);color:#000}
+.btn.dan{border-color:var(--red);color:var(--red)}
+.btn.dan:hover{background:var(--red);color:#fff}
+.btn.pur{border-color:var(--accent3);color:var(--accent3)}
+.btn.pur:hover{background:var(--accent3);color:#fff}
+.btn:disabled{opacity:.3;cursor:default;pointer-events:none}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+.sync-dot.ok{background:var(--green)}.sync-dot.dirty{background:var(--yellow);animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
 
-/* PROGRESS */
-.progress-ring{position:relative;display:inline-flex;align-items:center;justify-content:center}
+/* ── SHELL ── */
+.shell{display:flex;height:calc(100vh - 50px);overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:240px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:12px 12px 8px;border-bottom:1px solid var(--border);flex-shrink:0}
+.sb-head h3{font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:8px}
+.sb-filter{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:5px 7px;border-radius:3px;font-size:12px;font-family:var(--mono);cursor:pointer;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7290' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center}
+.sb-filter:focus{outline:none;border-color:var(--accent)}
+.sb-filter option{background:var(--bg3)}
+.car-list{flex:1;overflow-y:auto;padding:5px}
+.car-list::-webkit-scrollbar{width:3px}
+.car-list::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.ci{padding:8px 10px;border-radius:4px;cursor:pointer;border:1px solid transparent;margin-bottom:2px;transition:all .1s}
+.ci:hover{background:var(--bg3);border-color:var(--border)}
+.ci.active{background:var(--bg3);border-color:var(--accent)}
+.ci-name{font-size:13px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ci-meta{font-size:10px;color:var(--muted);margin-top:1px;font-family:var(--mono)}
+.cbadge{display:inline-block;font-size:9px;padding:1px 5px;border-radius:2px;font-family:var(--mono);font-weight:700;margin-right:3px}
+.badge-D{background:#2a2a2a;color:#888}.badge-C{background:#0a2040;color:#4a90d9}
+.badge-B{background:#0a2a15;color:#4abd7a}.badge-A{background:#2a1a00;color:#e09010}
+.badge-S1{background:#2a0a00;color:#e05030}.badge-S2{background:#2a001a;color:#cc4488}
+.badge-R{background:#1a0a2a;color:#9966dd}.badge-X{background:#1a1a00;color:#ddcc00}
+.sb-foot{padding:8px;border-top:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:5px}
+.no-builds{padding:20px 10px;text-align:center;color:var(--hint);font-size:11px;font-family:var(--mono);line-height:1.8}
+
+/* ── MAIN AREA ── */
+.main-area{flex:1;overflow:hidden;display:flex;flex-direction:column}
+
+/* ════ GARAGE PANEL ════ */
+.garage-panel{flex:1;overflow-y:auto;padding:22px 26px}
+.garage-panel::-webkit-scrollbar{width:5px}
+.garage-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+.garage-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;color:var(--muted);text-align:center}
+.garage-empty .ei{font-size:40px;opacity:.1}
+.garage-empty .el{font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+
+/* tune sheet */
+.sh-head{padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:18px}
+.sh-name-row{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.sh-name{font-family:var(--mono);font-size:18px;font-weight:700;flex:1;min-width:160px}
+.sh-name input{background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--text);font-family:var(--mono);font-size:18px;font-weight:700;width:100%;padding:2px 0}
+.sh-name input:focus{outline:none;border-color:var(--accent)}
+.meta-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.mf{display:flex;align-items:center;gap:4px}
+.ml{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em}
+.ms,.mi{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:3px 6px;border-radius:3px;font-size:12px;font-family:var(--mono);cursor:pointer}
+.mi{width:68px;cursor:text}
+.ms:focus,.mi:focus{outline:none;border-color:var(--accent)}
+.mem{background:var(--bg2);border:1px solid var(--border);border-left:3px solid var(--accent2);border-radius:4px;padding:8px 12px;margin-bottom:16px;font-family:var(--mono);font-size:11px;letter-spacing:.04em}
+.mem .ml2{color:var(--muted)}.mem .mv{color:var(--accent2);cursor:pointer}
+.sec{background:var(--bg2);border:1px solid var(--border);border-radius:6px;margin-bottom:12px;overflow:hidden}
+.sec-t{background:var(--bg3);padding:8px 14px;font-family:var(--mono);font-size:11px;letter-spacing:.09em;color:var(--accent);text-transform:uppercase;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:6px}
+.sec-t::before{content:'';width:5px;height:5px;background:var(--accent);border-radius:50%;display:inline-block}
+.sec-b{padding:12px}
+.tg{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px}
+.tc{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:8px 10px}
+.tc-l{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.tc-i{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--accent);font-family:var(--mono);font-size:14px;font-weight:700;padding:2px 0}
+.tc-i:focus{outline:none;border-color:var(--accent);color:var(--text)}
+.tc-s{font-size:10px;color:var(--muted);margin-top:2px}
+.notes-a{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:9px;border-radius:4px;resize:vertical;min-height:64px;line-height:1.6}
+.notes-a:focus{outline:none;border-color:var(--accent)}
+.fix-ul li{list-style:none;padding-left:12px;position:relative;margin-bottom:2px;font-size:11px;color:var(--muted)}
+.fix-ul li::before{content:'↑';position:absolute;left:0;color:var(--green);font-size:10px}
+.fix-ul li.dn::before{content:'↓';color:var(--red)}
+.tpill{font-size:11px;padding:3px 8px;border-radius:20px;border:1px solid var(--border2);color:var(--muted);cursor:pointer;font-family:var(--mono);transition:all .1s}
+.tpill.on{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.06)}
+.tbox{background:var(--bg3);border:1px solid var(--border);border-radius:4px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.6;min-height:50px}
+
+/* ════ BUILD GUIDE PANEL ════ */
+.guide-panel{flex:1;overflow:hidden;display:none;flex-direction:column}
+.gp-steps{background:var(--bg2);border-bottom:1px solid var(--border);height:42px;display:flex;align-items:center;padding:0 16px;gap:3px;overflow-x:auto;flex-shrink:0}
+.gp-steps::-webkit-scrollbar{height:0}
+.sp{font-size:11px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);color:var(--muted);cursor:pointer;font-family:var(--mono);white-space:nowrap;transition:all .12s}
+.sp:hover{color:var(--text);border-color:var(--border2)}
+.sp.cur{background:var(--accent);color:#000;border-color:var(--accent);font-weight:700}
+.sp.done{border-color:var(--green);color:var(--green)}
+.gp-body{flex:1;overflow-y:auto;padding:0}
+.gp-body::-webkit-scrollbar{width:5px}
+.gp-body::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* guide step layout: hint left, fields right */
+.step-layout{display:grid;grid-template-columns:1fr 1fr;min-height:100%;gap:0}
+@media(max-width:860px){.step-layout{grid-template-columns:1fr}}
+.step-hint{padding:28px 28px 28px 28px;border-right:1px solid var(--border);background:var(--bg2)}
+.step-fields{padding:28px;background:var(--bg);overflow-y:auto}
+.hint-step{font-family:var(--mono);font-size:10px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:6px}
+.hint-title{font-size:20px;font-weight:600;color:var(--text);margin-bottom:14px;line-height:1.3}
+.hint-body{font-size:13px;color:var(--muted);line-height:1.75}
+.hint-body p{margin-bottom:10px}
+.hint-body p:last-child{margin-bottom:0}
+.hint-body strong{color:var(--text);font-weight:500}
+.hint-body code{color:var(--accent);font-family:var(--mono);background:var(--bg3);padding:1px 5px;border-radius:3px;font-size:11px}
+.hbox{border-radius:5px;padding:10px 13px;margin-top:12px;font-size:12px;line-height:1.6}
+.hbox-tip{background:rgba(0,229,255,.05);border-left:3px solid var(--accent);color:var(--muted)}
+.hbox-tip strong{color:var(--accent);font-family:var(--mono)}
+.hbox-warn{background:rgba(245,200,66,.05);border-left:3px solid var(--yellow);color:var(--muted)}
+.hbox-warn strong{color:var(--yellow);font-family:var(--mono)}
+.hbox-good{background:rgba(0,200,150,.05);border-left:3px solid var(--green);color:var(--muted)}
+.hbox-good strong{color:var(--green);font-family:var(--mono)}
+.htable{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+.htable th{text-align:left;color:var(--muted);font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.06em;padding:5px 8px;border-bottom:1px solid var(--border)}
+.htable td{padding:6px 8px;border-bottom:1px solid rgba(37,43,58,.8);vertical-align:top}
+.htable tr:last-child td{border-bottom:none}
+.htable .th{color:var(--text);font-weight:500}
+.htable .tv{color:var(--accent);font-family:var(--mono);font-weight:700}
+.htable .tw{color:var(--muted);line-height:1.5;font-size:11px}
+
+/* fields side */
+.fields-title{font-family:var(--mono);font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.field-group{margin-bottom:20px}
+.fg-label{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.fg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
+.fg-cell{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:10px 12px;position:relative}
+.fg-cell.filled{border-color:rgba(0,229,255,.35)}
+.fg-cell-label{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.fg-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border2);color:var(--accent);font-family:var(--mono);font-size:15px;font-weight:700;padding:2px 0}
+.fg-input:focus{outline:none;border-color:var(--accent);color:var(--text)}
+.fg-rec{font-size:10px;color:var(--hint);margin-top:5px;font-family:var(--mono)}
+.fg-rec.has-val{color:var(--green)}
+.fg-hint-inline{font-size:10px;color:var(--muted);margin-top:4px;line-height:1.5}
+.choice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:7px}
+.choice-card{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:10px 12px;cursor:pointer;transition:all .12s}
+.choice-card:hover{border-color:var(--border2);background:var(--bg3)}
+.choice-card.sel{border-color:var(--accent);background:rgba(0,229,255,.05)}
+.choice-card .cc-name{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.choice-card .cc-sub{font-size:11px;color:var(--muted);line-height:1.4}
+.choice-card .cc-tag{font-size:10px;font-family:var(--mono);padding:2px 6px;border-radius:3px;margin-top:6px;display:inline-block}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;margin-bottom:16px;overflow:hidden}
+.progress-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s}
+.step-nav{display:flex;gap:8px;margin-top:24px;padding-top:16px;border-top:1px solid var(--border);align-items:center;flex-wrap:wrap}
+.finish-banner{background:rgba(0,200,150,.07);border:1px solid rgba(0,200,150,.2);border-radius:7px;padding:14px 16px;margin-top:16px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.fb-text{font-size:13px;color:var(--green);font-family:var(--mono)}
+.fb-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* checklist */
+.cl-ul{list-style:none}
+.cl-li{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;border-radius:4px;margin-bottom:2px;font-size:13px;color:var(--muted);cursor:pointer;transition:background .1s}
+.cl-li:hover{background:var(--bg2)}
+.cl-li.ck{color:var(--hint);text-decoration:line-through}
+.cl-li input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px;flex-shrink:0;margin-top:2px;cursor:pointer}
+
+/* ── MODAL ── */
+.mbg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center}
+.mbg.open{display:flex}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:8px;padding:20px;width:380px;max-width:95vw}
+.modal h3{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--accent);margin-bottom:12px}
+.modal label{font-size:10px;color:var(--muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:3px;margin-top:10px}
+.modal input,.modal select{width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);padding:7px 8px;border-radius:3px;font-size:13px;font-family:var(--mono)}
+.modal input:focus,.modal select:focus{outline:none;border-color:var(--accent)}
+.modal-btns{display:flex;gap:7px;margin-top:16px;justify-content:flex-end}
+
+/* ── TOAST ── */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:12px;padding:8px 14px;border-radius:4px;z-index:300;opacity:0;transition:opacity .2s;pointer-events:none;max-width:260px}
+.toast.show{opacity:1}
+.toast.err{border-color:var(--red);color:var(--red)}
 </style>
 </head>
 <body>
 
-<div class="nav">
-  <div class="nav-logo">FH6<span> // </span>BUILD GUIDE</div>
-  <div class="nav-steps" id="navSteps"></div>
-  <button class="nav-reset" onclick="resetGuide()">↺ Reset</button>
+<div class="topbar">
+  <div class="tb-logo">FH6<span> // </span>GARAGE</div>
+  <div class="tb-tabs">
+    <button class="tab-btn active" id="tabGarage" onclick="setTab('garage')">🚗 Garage</button>
+    <button class="tab-btn" id="tabGuide" onclick="setTab('guide')">🔧 Build wizard</button>
+  </div>
+  <div class="tb-spacer"></div>
+  <div class="tb-actions" id="tbActions">
+    <div class="sync-dot ok" id="syncDot"></div>
+    <button class="btn" onclick="exportDB()">Export</button>
+    <button class="btn" onclick="document.getElementById('importFile').click()">Import</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importDB(event)">
+    <button class="btn pri" onclick="startNewBuild()">+ New build</button>
+  </div>
 </div>
 
-<div class="layout">
-  <div class="sidebar" id="sidebar"></div>
-  <div class="main" id="main"></div>
+<div class="shell">
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sb-head">
+      <h3>Garage</h3>
+      <select class="sb-filter" id="filterClass" onchange="renderList()">
+        <option value="">All classes</option>
+        <option>D</option><option>C</option><option>B</option><option>A</option>
+        <option>S1</option><option>S2</option><option>R</option><option>X</option>
+      </select>
+    </div>
+    <div class="car-list" id="carList"></div>
+    <div class="sb-foot">
+      <button class="btn" style="width:100%;font-size:12px" onclick="startNewBuild()">+ New build</button>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main-area">
+
+    <!-- GARAGE TAB -->
+    <div class="garage-panel" id="garagePanel">
+      <div class="garage-empty" id="garageEmpty">
+        <div class="ei">🚗</div>
+        <div class="el">No build selected</div>
+        <div style="font-size:12px;margin-top:4px">Pick a car or start a new build</div>
+        <button class="btn pri" onclick="startNewBuild()" style="margin-top:12px">+ New build</button>
+      </div>
+      <div id="sheetArea" style="display:none"></div>
+    </div>
+
+    <!-- GUIDE TAB -->
+    <div class="guide-panel" id="guidePanel">
+      <div class="gp-steps" id="gpSteps"></div>
+      <div class="gp-body" id="gpBody"></div>
+    </div>
+
+  </div>
 </div>
+
+<!-- NEW BUILD MODAL -->
+<div class="mbg" id="addModal">
+  <div class="modal">
+    <h3>// NEW BUILD</h3>
+    <label>Car name</label>
+    <input type="text" id="newName" placeholder="e.g. Nissan Silvia S15" autocomplete="off">
+    <label>Class</label>
+    <select id="newClass"><option>D</option><option>C</option><option>B</option><option selected>A</option><option>S1</option><option>S2</option><option>R</option><option>X</option></select>
+    <label>Discipline</label>
+    <select id="newType">
+      <option value="drift">Drift</option><option value="street">Street / Circuit</option>
+      <option value="drag">Drag</option><option value="dirt">Dirt / Rally</option>
+      <option value="cross">Cross-country</option><option value="offroad">Off-road</option>
+    </select>
+    <label>Drivetrain</label>
+    <select id="newDrive"><option>RWD</option><option>AWD</option><option>FWD</option></select>
+    <label>PI Rating</label>
+    <input type="text" id="newPI" placeholder="e.g. 850">
+    <div class="modal-btns">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn pri" onclick="createBuild()">Start wizard →</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-/* ══ STATE ══ */
-const state = {
-  step: 0,
-  discipline: null,
-  drivetrain: null,
-  carClass: null,
-  engine: null,
-  checks: {}
+/* ══════════════════════════════════
+   DATA
+══════════════════════════════════ */
+const STORE = 'fh6v3';
+let db = JSON.parse(localStorage.getItem(STORE)||'{"cars":[]}');
+let cid = null;   // current car id
+let tab = 'garage';
+let saveT = null;
+
+function persist(){localStorage.setItem(STORE,JSON.stringify(db));syncDot('ok')}
+function dirty(){syncDot('dirty');clearTimeout(saveT);saveT=setTimeout(persist,800)}
+function syncDot(s){const d=document.getElementById('syncDot');if(d)d.className='sync-dot '+s}
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6)}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function ea(s){return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function cap(s){return s?s[0].toUpperCase()+s.slice(1):s}
+
+let toastT2;
+function toast(msg,err=false){
+  const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':'');
+  clearTimeout(toastT2);toastT2=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+/* ── BASE TUNES ── */
+const baseTune = t=>({
+  drift:  {tyrF:'30',tyrR:'32',finS:'Short',finL:'Long',camF:'-2.2',camR:'-1.5',toeF:'+0.1',toeR:'+0.1',cast:'6.5',arbF:'Low',arbR:'High/Stiff',sprF:'Soft-Mid',sprR:'Stiff',rhdF:'Low',rhdR:'Low',bmpF:'Moderate',bmpR:'Moderate',rbF:'Mod-High',rbR:'Moderate',aero:'Minimum',brkB:'52% Front',brkP:'100',dfF:'15',dfRA:'100',dfRD:'40',mem:'FD Supercharger / Max rear lock / Low front ARB',notes:''},
+  street: {tyrF:'33',tyrR:'33',finS:'Short',finL:'Long',camF:'-1.2',camR:'-0.9',toeF:'0.0',toeR:'+0.1',cast:'5.0',arbF:'Medium',arbR:'Medium-Firm',sprF:'Med-Firm',sprR:'Firm',rhdF:'Min',rhdR:'Min',bmpF:'Medium',bmpR:'Medium',rbF:'Medium',rbR:'Medium',aero:'Med-High',brkB:'57% Front',brkP:'100',dfF:'30',dfRA:'35',dfRD:'15',mem:'Semi-slick / Med aero / Firm springs',notes:''},
+  drag:   {tyrF:'36',tyrR:'26',finS:'Short 1st',finL:'Tall overall',camF:'0.0',camR:'0.0',toeF:'0.0',toeR:'0.0',cast:'4.0',arbF:'Soft',arbR:'Stiff',sprF:'Soft',sprR:'Stiff',rhdF:'Low',rhdR:'High',bmpF:'Soft',bmpR:'Stiff',rbF:'Soft',rbR:'Stiff',aero:'None',brkB:'55% Front',brkP:'80',dfF:'15',dfRA:'100',dfRD:'0',mem:'Max rear diff / Zero camber / Slick tyres',notes:''},
+  dirt:   {tyrF:'27',tyrR:'27',finS:'Medium',finL:'Longer',camF:'-0.3',camR:'-0.2',toeF:'0.0',toeR:'+0.1',cast:'5.5',arbF:'Soft',arbR:'Soft',sprF:'Very Soft',sprR:'Soft',rhdF:'High',rhdR:'High',bmpF:'Soft',bmpR:'Soft',rbF:'Soft',rbR:'Soft',aero:'Low',brkB:'53% Front',brkP:'90',dfF:'40',dfRA:'65',dfRD:'10',mem:'Rally tyres / Max ride height / Soft everything',notes:''},
+  cross:  {tyrF:'30',tyrR:'30',finS:'Med-Short',finL:'Medium',camF:'-0.5',camR:'-0.4',toeF:'0.0',toeR:'+0.1',cast:'5.0',arbF:'Medium',arbR:'Medium',sprF:'Medium',sprR:'Medium',rhdF:'Med-Hi',rhdR:'Med-Hi',bmpF:'Medium',bmpR:'Medium',rbF:'Medium',rbR:'Medium',aero:'Low-Med',brkB:'55% Front',brkP:'95',dfF:'35',dfRA:'45',dfRD:'10',mem:'All-terrain / Balanced diff',notes:''},
+  offroad:{tyrF:'25',tyrR:'25',finS:'Short',finL:'Medium',camF:'0.0',camR:'0.0',toeF:'0.0',toeR:'0.0',cast:'4.0',arbF:'Min',arbR:'Min',sprF:'Min',sprR:'Min',rhdF:'Max',rhdR:'Max',bmpF:'Soft',bmpR:'Soft',rbF:'Soft',rbR:'Soft',aero:'None',brkB:'50% Front',brkP:'85',dfF:'85',dfRA:'100',dfRD:'20',mem:'Max ride height / Full diff lock / Off-road tyres',notes:''}
+})[t]||{};
+
+/* ══════════════════════════════════
+   TABS
+══════════════════════════════════ */
+function setTab(t){
+  tab=t;
+  document.getElementById('tabGarage').className='tab-btn'+(t==='garage'?' active':'');
+  document.getElementById('tabGuide').className='tab-btn'+(t==='guide'?' active':'');
+  document.getElementById('garagePanel').style.display=t==='garage'?'block':'none';
+  document.getElementById('guidePanel').style.display=t==='guide'?'flex':'none';
+  const tbA=document.getElementById('tbActions');
+  if(t==='guide'){
+    tbA.innerHTML=`<div class="sync-dot ok" id="syncDot"></div><button class="btn dan" onclick="cancelGuide()">✕ Cancel</button>`;
+  } else {
+    tbA.innerHTML=`<div class="sync-dot ok" id="syncDot"></div><button class="btn" onclick="exportDB()">Export</button><button class="btn" onclick="document.getElementById('importFile').click()">Import</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importDB(event)"><button class="btn pri" onclick="startNewBuild()">+ New build</button>`;
+  }
+}
+
+/* ══════════════════════════════════
+   SIDEBAR / LIST
+══════════════════════════════════ */
+function renderList(){
+  const fc=document.getElementById('filterClass').value;
+  const cars=db.cars.filter(c=>!fc||c.carClass===fc);
+  const el=document.getElementById('carList');
+  if(!cars.length){el.innerHTML='<div class="no-builds">No builds yet.<br>Start a new build →</div>';return}
+  el.innerHTML=cars.map(c=>`<div class="ci ${c.id===cid?'active':''}" onclick="openBuild('${c.id}')">
+    <div class="ci-name">${esc(c.name)}</div>
+    <div class="ci-meta"><span class="cbadge badge-${c.carClass}">${c.carClass}</span>${esc(c.type.toUpperCase())} · ${esc(c.drivetrain||'RWD')} · PI ${esc(c.pi||'—')}</div>
+  </div>`).join('');
+}
+
+/* ══════════════════════════════════
+   GARAGE SHEET
+══════════════════════════════════ */
+const tipData={
+  drift:{'Won\'t initiate':'↓ front ARB\n↓ front diff accel\n↓ front tyre pressure\n↓ rear springs','Won\'t hold angle':'↑ rear camber (more −)\n↑ downforce\n↑ front tyre pressure','Catches on exit':'↓ rear camber\n↓ rear diff accel\n↑ front diff accel','Steps out suddenly':'↑ rear diff accel\n↑ rear ARB\n↑ rear springs','Sluggish initiation':'Shorter final drive\n↓ front diff\n↑ rear diff accel','Too twitchy':'↑ rear diff decel\n↑ rear rebound\n↑ rear ARB'},
+  street:{'Understeers':'↓ front spring\n↓ front ARB\n↑ front diff accel','Oversteers on exit':'↑ rear ARB\n↑ rear spring\n↓ rear diff accel','Too bouncy':'↑ rebound damping\n↑ spring stiffness','Brakes lock':'↓ front brake bias\n↑ tyre pressure','Traction loss exit':'↓ rear diff accel\n↑ rear spring'},
+  drag:{'Spins on launch':'↑ rear diff\n↑ rear spring\n↓ launch RPM','Front lifts':'↑ front spring\n↓ front ride height','Slow 60ft':'↓ launch RPM (find torque)\n↑ rear diff','2nd gear spin':'↑ rear diff\n↑ rear spring\n↑ pressure'},
+  dirt:{'Slides wide':'↑ rear diff\n↑ rear ARB\n↑ rear rebound','Too bouncy':'↓ spring\n↑ bump damping\n↑ ride height','No traction':'↑ rear diff\n↑ tyre pressure','Understeers':'↑ front diff\n↓ front ARB'},
+  cross:{'Unstable on road':'↑ ARB\n↑ spring\n↓ ride height','Too stiff off-road':'↓ spring\n↑ ride height\n↓ ARB','No traction':'↑ diff accel (both)\n↑ rear spring'},
+  offroad:{'Bottoms out':'↑ ride height\n↑ spring\n↑ bump damping','Rolls in corners':'↑ ARB\n↑ spring','Can\'t climb':'↑ rear diff 100%\n↑ front diff lock'}
 };
 
-/* ══ STEP DATA ══ */
-const steps = [
-  { id:'discipline', label:'Discipline', title:'What are you building for?', icon:'🏁' },
-  { id:'drivetrain', label:'Drivetrain', title:'Pick your drivetrain', icon:'⚙' },
-  { id:'class',      label:'Class',      title:'What class are you building to?', icon:'📊' },
-  { id:'upgrades',   label:'Upgrades',   title:'Upgrade order & priorities', icon:'🔧' },
-  { id:'tyres',      label:'Tyres',      title:'Tyres & tyre pressure', icon:'🔵' },
-  { id:'alignment',  label:'Alignment',  title:'Alignment — camber, toe & caster', icon:'📐' },
-  { id:'suspension', label:'Suspension', title:'Springs, ride height & damping', icon:'🌀' },
-  { id:'aero',       label:'Aero',       title:'Aerodynamics & downforce', icon:'💨' },
-  { id:'brakes',     label:'Brakes',     title:'Brakes & brake bias', icon:'🔴' },
-  { id:'diff',       label:'Diff',       title:'Differentials explained', icon:'↔' },
-  { id:'gearing',    label:'Gearing',    title:'Gearing & final drive', icon:'⚡' },
-  { id:'checklist',  label:'Checklist',  title:'Final build checklist', icon:'✅' },
+function openBuild(id){
+  cid=id;setTab('garage');
+  document.getElementById('garageEmpty').style.display='none';
+  document.getElementById('sheetArea').style.display='block';
+  renderList();renderSheet();
+}
+
+function renderSheet(){
+  const car=db.cars.find(c=>c.id===cid);if(!car)return;
+  const t=car.tune; const tips=tipData[car.type]||{}; const tk=Object.keys(tips);
+  document.getElementById('sheetArea').innerHTML=`
+  <div class="sh-head">
+    <div class="sh-name-row">
+      <div class="sh-name" style="flex:1"><input value="${ea(car.name)}" onchange="uf('name',this.value)" oninput="dirty()"></div>
+      <button class="btn pur" onclick="editInGuide('${car.id}')">🔧 Refine in wizard</button>
+      <button class="btn dan" onclick="deleteBuild('${car.id}')">Delete</button>
+    </div>
+    <div class="meta-row">
+      <div class="mf"><span class="ml">Class</span><select class="ms" onchange="uf('carClass',this.value);renderList()">${['D','C','B','A','S1','S2','R','X'].map(x=>`<option ${x===car.carClass?'selected':''}>${x}</option>`).join('')}</select></div>
+      <div class="mf"><span class="ml">PI</span><input class="mi" value="${ea(car.pi||'')}" placeholder="000" onchange="uf('pi',this.value)" oninput="dirty()"></div>
+      <div class="mf"><span class="ml">Type</span><select class="ms" onchange="uf('type',this.value);setTimeout(renderSheet,20)">${['drift','street','drag','dirt','cross','offroad'].map(x=>`<option value="${x}" ${x===car.type?'selected':''}>${cap(x)}</option>`).join('')}</select></div>
+      <div class="mf"><span class="ml">Drive</span><select class="ms" onchange="uf('drivetrain',this.value)">${['RWD','AWD','FWD'].map(x=>`<option ${x===(car.drivetrain||'RWD')?'selected':''}>${x}</option>`).join('')}</select></div>
+    </div>
+  </div>
+  <div class="mem"><span class="ml2">MEMORY HOOK // </span><span class="mv" id="memv" onclick="editMem()">${esc(t.mem||'Click to set memory hook')}</span></div>
+  <div class="sec"><div class="sec-t">Tyres &amp; gearing</div><div class="sec-b"><div class="tg">
+    ${f('tyrF','Front pressure','psi',t.tyrF)}${f('tyrR','Rear pressure','psi',t.tyrR)}
+    ${f('finS','Final drive — snap','short = quicker response',t.finS)}${f('finL','Final drive — sustain','long = sustained angle/speed',t.finL)}
+  </div></div></div>
+  <div class="sec"><div class="sec-t">Alignment</div><div class="sec-b"><div class="tg">
+    ${f('camF','Front camber','°',t.camF)}${f('camR','Rear camber','°',t.camR)}
+    ${f('toeF','Front toe','+ = out',t.toeF)}${f('toeR','Rear toe','+ = in',t.toeR)}${f('cast','Caster','° — higher = more stable sideways',t.cast)}
+  </div></div></div>
+  <div class="sec"><div class="sec-t">Anti-roll bars</div><div class="sec-b"><div class="tg">
+    ${f('arbF','Front ARB','low = easier rotation',t.arbF)}${f('arbR','Rear ARB','high = stable slide platform',t.arbR)}
+  </div></div></div>
+  <div class="sec"><div class="sec-t">Springs, ride height &amp; damping</div><div class="sec-b"><div class="tg">
+    ${f('sprF','Front spring','stiffness',t.sprF)}${f('sprR','Rear spring','stiffness',t.sprR)}
+    ${f('rhdF','Front ride height','lower = faster',t.rhdF)}${f('rhdR','Rear ride height','',t.rhdR)}
+    ${f('bmpF','Front bump','compression',t.bmpF)}${f('bmpR','Rear bump','compression',t.bmpR)}
+    ${f('rbF','Front rebound','',t.rbF)}${f('rbR','Rear rebound','',t.rbR)}
+  </div></div></div>
+  <div class="sec"><div class="sec-t">Aero, brakes &amp; differentials</div><div class="sec-b"><div class="tg">
+    ${f('aero','Downforce','front / rear',t.aero)}${f('brkB','Brake bias','% front',t.brkB)}${f('brkP','Brake pressure','%',t.brkP)}
+    ${f('dfF','Front diff accel','%',t.dfF)}${f('dfRA','Rear diff accel','% — full = max control',t.dfRA)}${f('dfRD','Rear diff decel','%',t.dfRD)}
+  </div></div></div>
+  <div class="sec"><div class="sec-t">Quick fixes</div><div class="sec-b">
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px" id="tipStrip">${tk.map((k,i)=>`<div class="tpill ${i===0?'on':''}" onclick="showTip(this,'${ea(k)}')">${esc(k)}</div>`).join('')}</div>
+    <div class="tbox" id="tipBox">${tk[0]?'<ul class="fix-ul">'+fmtTip(tips[tk[0]])+'</ul>':'—'}</div>
+  </div></div>
+  <div class="sec"><div class="sec-t">Build notes / test log</div><div class="sec-b">
+    <textarea class="notes-a" placeholder="Lap times, what you changed, track-specific notes..." onchange="ut('notes',this.value)" oninput="dirty()">${esc(t.notes||'')}</textarea>
+  </div></div>`;
+
+  document.querySelectorAll('.tc-i').forEach(el=>{
+    el.addEventListener('change',function(){ut(this.dataset.k,this.value)});
+    el.addEventListener('input',dirty);
+  });
+}
+
+function f(key,label,sub,val){
+  return `<div class="tc"><div class="tc-l">${esc(label)}</div><input class="tc-i" data-k="${ea(key)}" type="text" value="${ea(val||'')}"><div class="tc-s">${esc(sub)}</div></div>`;
+}
+function fmtTip(txt){return txt.split('\n').map(l=>`<li class="${l.startsWith('↓')?'dn':''}">${esc(l)}</li>`).join('')}
+function showTip(el,key){
+  document.querySelectorAll('.tpill').forEach(p=>p.classList.remove('on'));el.classList.add('on');
+  const car=db.cars.find(c=>c.id===cid);const tips=tipData[car?car.type:'drift']||{};
+  document.getElementById('tipBox').innerHTML=`<ul class="fix-ul">${fmtTip(tips[key]||'—')}</ul>`;
+}
+function editMem(){
+  const el=document.getElementById('memv');
+  const inp=document.createElement('input');
+  inp.value=el.textContent==='Click to set memory hook'?'':el.textContent;
+  inp.style.cssText='background:transparent;border:none;border-bottom:1px solid var(--accent2);color:var(--accent2);font-size:inherit;font-family:inherit;width:280px;';
+  el.replaceWith(inp);inp.focus();
+  const done=()=>{ut('mem',inp.value);const s=document.createElement('span');s.id='memv';s.className='mv';s.textContent=inp.value||'Click to set memory hook';s.onclick=editMem;inp.replaceWith(s)};
+  inp.addEventListener('blur',done);inp.addEventListener('keydown',e=>{if(e.key==='Enter')inp.blur()});
+}
+function uf(k,v){const c=db.cars.find(x=>x.id===cid);if(!c)return;c[k]=v;dirty()}
+function ut(k,v){const c=db.cars.find(x=>x.id===cid);if(!c)return;c.tune[k]=v;dirty()}
+
+/* ══════════════════════════════════
+   CRUD
+══════════════════════════════════ */
+function startNewBuild(){
+  document.getElementById('newName').value='';
+  document.getElementById('newPI').value='';
+  document.getElementById('addModal').classList.add('open');
+  setTimeout(()=>document.getElementById('newName').focus(),60);
+}
+function closeModal(){document.getElementById('addModal').classList.remove('open')}
+function createBuild(){
+  const name=document.getElementById('newName').value.trim();
+  if(!name){document.getElementById('newName').style.borderColor='var(--red)';return}
+  const type=document.getElementById('newType').value;
+  const car={
+    id:uid(),name,
+    carClass:document.getElementById('newClass').value,
+    type,
+    drivetrain:document.getElementById('newDrive').value,
+    pi:document.getElementById('newPI').value,
+    tune:baseTune(type)
+  };
+  db.cars.unshift(car);persist();closeModal();renderList();
+  cid=car.id;
+  gWiz.carId=car.id;gWiz.step=0;gWiz.checks={};
+  setTab('guide');renderGuide();
+  toast('Build created — let\'s tune it!');
+}
+function deleteBuild(id){
+  if(!confirm('Delete this build?'))return;
+  db.cars=db.cars.filter(c=>c.id!==id);
+  if(cid===id){cid=null;document.getElementById('garageEmpty').style.display='flex';document.getElementById('sheetArea').style.display='none';}
+  persist();renderList();toast('Deleted.');
+}
+function editInGuide(id){
+  cid=id;gWiz.carId=id;gWiz.step=0;gWiz.checks={};
+  setTab('guide');renderGuide();
+}
+function cancelGuide(){setTab('garage');if(cid)openBuild(cid)}
+
+/* ══════════════════════════════════
+   GUIDE WIZARD
+══════════════════════════════════ */
+const STEPS=[
+  {id:'tyres',     label:'Tyres'},
+  {id:'alignment', label:'Alignment'},
+  {id:'arb',       label:'ARBs'},
+  {id:'suspension',label:'Suspension'},
+  {id:'aero',      label:'Aero'},
+  {id:'brakes',    label:'Brakes'},
+  {id:'diff',      label:'Diff'},
+  {id:'gearing',   label:'Gearing'},
+  {id:'checklist', label:'Checklist'},
 ];
 
-/* ══ CONTENT ══ */
-function getContent(stepId) {
-  const d = state.discipline;
-  const dr = state.drivetrain;
-  const cl = state.carClass;
+const gWiz={carId:null,step:0,checks:{}};
 
-  const isDrift   = d === 'drift';
-  const isDrag    = d === 'drag';
-  const isDirt    = d === 'dirt';
-  const isStreet  = d === 'street' || d === 'cross' || d === 'offroad';
+function gCar(){return db.cars.find(c=>c.id===gWiz.carId)}
+function gStep(i){if(i<0||i>=STEPS.length)return;gWiz.step=i;renderGuide();document.getElementById('gpBody').scrollTop=0}
+function gDone(i){return gWiz.step>i}
 
-  const isRWD = dr === 'RWD';
-  const isFWD = dr === 'FWD';
-  const isAWD = dr === 'AWD';
+function renderGuide(){
+  const car=gCar();if(!car)return;
+  const d=car.type; const dr=car.drivetrain||'RWD'; const cl=car.carClass;
+  const isD=d==='drift'; const isDr=d==='drag'; const isDt=d==='dirt';
+  const hCl=['S1','S2','R','X'].includes(cl);
 
-  const highClass = ['S1','S2','R','X'].includes(cl);
+  // step pills
+  document.getElementById('gpSteps').innerHTML=STEPS.map((s,i)=>
+    `<div class="sp ${i===gWiz.step?'cur':''} ${gDone(i)?'done':''}" onclick="gStep(${i})">${s.label}</div>`).join('');
 
-  switch(stepId) {
+  const {id}=STEPS[gWiz.step];
+  const pct=Math.round((gWiz.step/STEPS.length)*100);
 
-  case 'discipline': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🏁</span><span class="gb-title">Choose your discipline first</span></div>
-      <div class="gb-body">
-        <p>Every tuning decision flows from what you want the car to <strong>do</strong>. A drift build and a drag build with the same car will have completely opposite settings. Pick one discipline and commit to it.</p>
-        <p>You can always build the same car multiple times in Forza — one tune for drift, one for street. Save them separately.</p>
-      </div>
-    </div>
-    <div class="cmp-grid">
-      ${[
-        {id:'street',name:'Street / Circuit',sub:'Balanced grip, clean lap times, stable under braking. Good for road races and circuits.',tag:'tag-street',tagLabel:'Most common'},
-        {id:'drift',name:'Drift',sub:'Maximum angle, throttle control, sliding. Opposite lock is your friend.',tag:'tag-drift',tagLabel:'High skill'},
-        {id:'drag',name:'Drag',sub:'Straight-line speed only. Launch, traction, and gearing are everything.',tag:'tag-drag',tagLabel:'Simple but precise'},
-        {id:'dirt',name:'Dirt / Rally',sub:'Loose surfaces, bumps, high ride height. Think WRC not F1.',tag:'tag-street',tagLabel:'Technical'},
-        {id:'cross',name:'Cross-country',sub:'Mixed tarmac and dirt. A blend of road and rally tuning.',tag:'tag-street',tagLabel:'Versatile'},
-        {id:'offroad',name:'Off-road',sub:'Maximum clearance, soft suspension, full diff lock. Built for the rough stuff.',tag:'tag-drift',tagLabel:'Extreme'},
-      ].map(o=>`<div class="cmp-card ${state.discipline===o.id?'best':''}" onclick="pick('discipline','${o.id}');renderAll()">
-        <div class="cmp-name">${o.name}</div>
-        <div class="cmp-sub">${o.sub}</div>
-        <span class="cmp-tag ${o.tag}">${o.tagLabel}</span>
-      </div>`).join('')}
-    </div>`;
+  // build the two-column layout
+  const {hint,fields}=getStepParts(id,car,d,dr,cl,isD,isDr,isDt,hCl);
 
-  case 'drivetrain': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">⚙</span><span class="gb-title">Drivetrain fundamentals</span></div>
-      <div class="gb-body">
-        <p>Your drivetrain determines how power reaches the road — and changes <strong>everything</strong> about how you tune the car. Don't fight your drivetrain; tune around it.</p>
+  document.getElementById('gpBody').innerHTML=`
+  <div class="step-layout">
+    <div class="step-hint">
+      <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+      <div class="hint-step">Step ${gWiz.step+1} of ${STEPS.length} — ${STEPS[gWiz.step].label.toUpperCase()}</div>
+      <div class="hint-title">${getStepTitle(id,d)}</div>
+      <div class="hint-body">${hint}</div>
+    </div>
+    <div class="step-fields">
+      <div class="fields-title">📝 ${esc(car.name)} — fill in your values</div>
+      ${fields}
+      <div class="step-nav">
+        <button class="btn" onclick="gStep(${gWiz.step-1})" ${gWiz.step===0?'disabled':''}>← Back</button>
+        <button class="btn pri" onclick="gStep(${gWiz.step+1})" ${gWiz.step===STEPS.length-1?'disabled':''}>Next →</button>
+        ${gWiz.step===STEPS.length-1?`<button class="btn suc" onclick="finishGuide()">✓ Done — go to garage</button>`:''}
+        <button class="btn" onclick="cancelGuide()" style="margin-left:auto;font-size:11px;color:var(--muted);border-color:var(--hint)">Save &amp; exit wizard</button>
       </div>
     </div>
-    <div class="cmp-grid">
-      ${[
-        {id:'RWD',name:'Rear-wheel drive',sub:'Power through the rear. Great for drift and street. Oversteers naturally on exit. Tune rear diff carefully.',tag:isDrift?'tag-drift':'tag-street',tagLabel:isDrift?'Best for drift':'Classic choice'},
-        {id:'AWD',name:'All-wheel drive',sub:'Power to all four wheels. Fastest for road and dirt. Traction advantage off the line. Tune both diffs.',tag:'tag-street',tagLabel:'Best traction'},
-        {id:'FWD',name:'Front-wheel drive',sub:'Power through the front. Understeers by nature. Difficult to drift. Strong for tight road courses.',tag:'tag-drag',tagLabel:'Handling focused'},
-      ].map(o=>`<div class="cmp-card ${state.drivetrain===o.id?'best':''}" onclick="pick('drivetrain','${o.id}');renderAll()">
-        <div class="cmp-name">${o.name}</div>
-        <div class="cmp-sub">${o.sub}</div>
-        <span class="cmp-tag ${o.tag}">${o.tagLabel}</span>
-      </div>`).join('')}
-    </div>
-    ${isDrift && !isRWD ? '<div class="warn-box"><strong>⚠ NOTE //</strong> Drift builds almost always need RWD. AWD drift exists but is far harder to control and requires a conversion upgrade.</div>' : ''}
-    ${isDrag && !isAWD ? '<div class="tip-box"><strong>TIP //</strong> AWD launches harder in most classes due to better traction off the line. RWD drag is doable but needs precise launch RPM tuning.</div>' : ''}
-    <div class="guide-block" style="margin-top:16px">
-      <div class="gb-head"><span class="gb-icon">📖</span><span class="gb-title">What changes per drivetrain</span></div>
-      <div class="gb-body">
-        <table class="tune-table">
-          <tr><th>Setting</th><th>RWD</th><th>AWD</th><th>FWD</th></tr>
-          <tr><td class="t-setting">Diff focus</td><td class="t-val">Rear</td><td class="t-val">Both</td><td class="t-val">Front</td></tr>
-          <tr><td class="t-setting">Oversteer risk</td><td class="t-val" style="color:var(--red)">High</td><td class="t-val" style="color:var(--yellow)">Medium</td><td class="t-val" style="color:var(--green)">Low</td></tr>
-          <tr><td class="t-setting">Launch traction</td><td class="t-val" style="color:var(--yellow)">Medium</td><td class="t-val" style="color:var(--green)">Best</td><td class="t-val" style="color:var(--yellow)">Medium</td></tr>
-          <tr><td class="t-setting">Camber priority</td><td class="t-val">Rear heavy</td><td class="t-val">Balanced</td><td class="t-val">Front heavy</td></tr>
-        </table>
-      </div>
-    </div>`;
+  </div>`;
 
-  case 'class': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">📊</span><span class="gb-title">Classes and PI limits</span></div>
-      <div class="gb-body">
-        <p>Every car has a <strong>Performance Index (PI)</strong> score that limits which class it competes in. More upgrades = higher PI. The goal is to maximise performance <em>without</em> going over your target class limit.</p>
-        <p>Some upgrades give better PI return than others. Heavy engine swaps cost a lot of PI. Suspension and tyre upgrades are usually efficient.</p>
-      </div>
-    </div>
-    <div class="cmp-grid">
-      ${[
-        {id:'D',name:'Class D',sub:'100–300 PI. Stock or light upgrades. Focus on suspension geometry.',col:'#888'},
-        {id:'C',name:'Class C',sub:'301–400 PI. Tyre upgrades matter most here.',col:'#4a90d9'},
-        {id:'B',name:'Class B',sub:'401–500 PI. Handling becomes a bottleneck.',col:'#4abd7a'},
-        {id:'A',name:'Class A',sub:'501–600 PI. Most competitive online class. Every decimal matters.',col:'#e09010'},
-        {id:'S1',name:'Class S1',sub:'601–700 PI. Forced induction likely. Heat management matters.',col:'#e05030'},
-        {id:'S2',name:'Class S2',sub:'701–800 PI. Very fast. Stability upgrades are mandatory.',col:'#cc4488'},
-        {id:'R',name:'Class R',sub:'801–900 PI. Race-spec. Min ride height, max downforce.',col:'#9966dd'},
-        {id:'X',name:'Class X',sub:'901–999 PI. Extreme builds. Stability is the challenge.',col:'#ddcc00'},
-      ].map(o=>`<div class="cmp-card ${state.carClass===o.id?'best':''}" onclick="pick('carClass','${o.id}');renderAll()" style="${state.carClass===o.id?'border-color:'+o.col:''}">
-        <div class="cmp-name" style="color:${o.col}">${o.name}</div>
-        <div class="cmp-sub">${o.sub}</div>
-      </div>`).join('')}
-    </div>
-    ${highClass ? `<div class="warn-box"><strong>HIGH CLASS BUILD //</strong> At ${cl}+ you must install aero, race suspension, and race differential or you'll be leaving serious performance on the table. These are mandatory, not optional.</div>` : ''}`;
+  // wire inputs
+  document.querySelectorAll('.fg-input').forEach(el=>{
+    el.addEventListener('input',function(){
+      ut(this.dataset.k,this.value);
+      // update rec colour
+      const rec=this.closest('.fg-cell')?.querySelector('.fg-rec');
+      if(rec)rec.className='fg-rec has-val';
+      dirty();
+    });
+  });
+}
 
-  case 'upgrades': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🔧</span><span class="gb-title">Upgrade order matters</span><span class="gb-badge badge-must">Do this first</span></div>
-      <div class="gb-body">
-        <p>Don't just click "max everything". Each upgrade costs <strong>PI points</strong>. You want maximum performance for your class limit — that means choosing upgrades strategically.</p>
-        <p>The rule: <strong>unlock tuneable parts first</strong>, then add power. A car you can tune beats a faster car you can't control.</p>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">1</span><span class="gb-title">Recommended upgrade order for ${d ? d.toUpperCase() : 'your build'}</span></div>
-      <div class="gb-body">
-        <div class="upgrade-chain">
-          ${(isDrift ? [
-            {l:'Race Tyres',p:true},{l:'→'},{l:'Race Suspension',p:true},{l:'→'},{l:'Race Diff',p:true},{l:'→'},{l:'Brakes',p:false},{l:'→'},{l:'FD Supercharger',p:true},{l:'→'},{l:'Aero (optional)',p:false}
-          ] : isDrag ? [
-            {l:'Race Tyres',p:true},{l:'→'},{l:'Race Suspension',p:true},{l:'→'},{l:'Race Diff',p:true},{l:'→'},{l:'Engine swap / Turbo',p:true},{l:'→'},{l:'Gearbox',p:false},{l:'→'},{l:'Brakes',p:false}
-          ] : isDirt ? [
-            {l:'Rally Tyres',p:true},{l:'→'},{l:'Rally Suspension',p:true},{l:'→'},{l:'Race Diff',p:true},{l:'→'},{l:'Brakes',p:false},{l:'→'},{l:'Engine',p:false},{l:'→'},{l:'Roll Cage',p:false}
-          ] : [
-            {l:'Race Tyres',p:true},{l:'→'},{l:'Race Suspension',p:true},{l:'→'},{l:'Race Diff',p:true},{l:'→'},{l:'Aero',p:highClass},{l:'→'},{l:'Brakes',p:false},{l:'→'},{l:'Engine',p:false}
-          ]).map(i=>i.l==='→'?`<span class="uc-arrow">→</span>`:`<div class="uc-item ${i.p?'priority':''}">${i.l}</div>`).join('')}
-        </div>
-        <p style="font-size:11px;color:var(--muted);margin-top:4px">Orange items = install these before anything else.</p>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">💡</span><span class="gb-title">PI efficiency tips</span></div>
-      <div class="gb-body">
-        <p><strong>Tyre upgrades</strong> give the best handling gain per PI point — always worth it.</p>
-        <p><strong>Engine swaps</strong> are expensive in PI. Only do one if you're trying to maximise power at the top of a class, not if you're trying to squeeze under a limit.</p>
-        <p><strong>Weight reduction</strong> improves PI ratio and handling. Lightweight flywheel and carbon fibre upgrades are usually efficient.</p>
-        <p><strong>Forced induction</strong> (turbo/supercharger) is the best way to add power. <strong>FD Supercharger</strong> is recommended for drift — instant throttle response.</p>
-        ${isDrift ? '<div class="tip-box"><strong>DRIFT TIP //</strong> For drift, you want power delivery that\'s smooth and instant — not turbo lag. FD Supercharger or naturally aspirated with high displacement is ideal. Avoid big turbos for drift.</div>' : ''}
-        ${isDrag ? '<div class="tip-box"><strong>DRAG TIP //</strong> For drag, a twin turbo with a short spool time or a supercharger gives you power earlier in the RPM range, which helps with the launch phase.</div>' : ''}
-      </div>
-    </div>`;
+function finishGuide(){persist();openBuild(gWiz.carId);toast('Build saved — tweak it after testing!')}
 
-  case 'tyres': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🔵</span><span class="gb-title">Tyre compound</span><span class="gb-badge badge-must">Most impactful upgrade</span></div>
-      <div class="gb-body">
-        <p>Tyres are your only contact with the road. <strong>Everything</strong> else you tune depends on the tyres working correctly. Always upgrade to the best compound you can afford PI-wise.</p>
-        <table class="tune-table">
-          <tr><th>Compound</th><th>Best for</th><th>Notes</th></tr>
-          <tr><td class="t-setting">Stock / Street</td><td class="t-val t-why">D/C class</td><td class="t-why">Limited grip, but works at low PI</td></tr>
-          <tr><td class="t-setting">Sport</td><td class="t-val t-why">C/B class or drift</td><td class="t-why">Good balance. Drift cars often run Sport intentionally for slip</td></tr>
-          <tr><td class="t-setting">Semi-slick</td><td class="t-val t-why">A/S1 class</td><td class="t-why">Much more grip, less forgiving</td></tr>
-          <tr><td class="t-setting">Racing slick</td><td class="t-val t-why">S2/R/X class</td><td class="t-why">Maximum grip, needs precise tuning</td></tr>
-          <tr><td class="t-setting">Rally / Off-road</td><td class="t-val t-why">Dirt / Off-road</td><td class="t-why">Use discipline-specific tyres — mandatory</td></tr>
-        </table>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">💨</span><span class="gb-title">Tyre pressure</span><span class="gb-badge badge-rec">Tune this</span></div>
-      <div class="gb-body">
-        <p>Pressure affects how much of the tyre contacts the road. <strong>Too low</strong> = squirmy, unpredictable breakaway. <strong>Too high</strong> = sharp response but less grip and more bouncy.</p>
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Front</th><th>Rear</th><th>Why</th></tr>
-          ${isDrift ? `
-          <tr><td class="t-setting">Drift</td><td class="t-val">30–32 psi</td><td class="t-val">28–32 psi</td><td class="t-why">Lower front = more predictable slide entry. Lower rear = easier to break traction</td></tr>
-          ` : isDrag ? `
-          <tr><td class="t-setting">Drag</td><td class="t-val">35–38 psi</td><td class="t-val">24–28 psi</td><td class="t-why">High front = less drag. Low rear = bigger contact patch for traction on launch</td></tr>
-          ` : isDirt ? `
-          <tr><td class="t-setting">Dirt / Rally</td><td class="t-val">26–28 psi</td><td class="t-val">26–28 psi</td><td class="t-why">Lower pressure = better surface conforming on loose terrain</td></tr>
-          ` : `
-          <tr><td class="t-setting">Street / Circuit</td><td class="t-val">32–35 psi</td><td class="t-val">32–35 psi</td><td class="t-why">Balanced pressure = maximum contact patch and predictable handling</td></tr>
-          `}
-        </table>
-        <div class="tip-box"><strong>TEST TIP //</strong> Run a few laps and check if the car feels vague (pressure too low) or nervous/twitchy (too high). Adjust in 1–2 psi steps.</div>
-      </div>
-    </div>`;
+function getStepTitle(id,d){
+  return{tyres:'Set your tyre type &amp; pressure',alignment:'Dial in alignment',arb:'Set your anti-roll bars',suspension:'Springs, ride height &amp; damping',aero:'Aero &amp; downforce',brakes:'Brakes &amp; bias',diff:'Differential lock',gearing:'Gearing &amp; final drive',checklist:'Pre-drive checklist'}[id]||id;
+}
 
-  case 'alignment': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">📐</span><span class="gb-title">Camber — the most misunderstood setting</span><span class="gb-badge badge-rec">Tune this</span></div>
-      <div class="gb-body">
-        <p>Camber is the tilt of the wheel when viewed from the front. <strong>Negative camber</strong> (top of wheel tilted inward) helps the tyre stay flat during cornering because the car body rolls outward.</p>
-        <p>Too much negative camber = the car wears the inside edge of the tyre and loses straight-line grip. Too little = tyres fold under in corners.</p>
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Front camber</th><th>Rear camber</th><th>Why</th></tr>
-          ${isDrift ? `
-          <tr><td class="t-setting">Drift</td><td class="t-val">-2.0° to -2.5°</td><td class="t-val">-1.5° to -2.0°</td><td class="t-why">More negative = more slide stability at angle. More camber front helps catch during transitions</td></tr>
-          ` : isDrag ? `
-          <tr><td class="t-setting">Drag</td><td class="t-val">0.0°</td><td class="t-val">0.0°</td><td class="t-why">Zero camber = maximum contact patch for straight-line grip. Any angle reduces traction on launch</td></tr>
-          ` : isDirt ? `
-          <tr><td class="t-setting">Dirt / Rally</td><td class="t-val">-0.2° to -0.5°</td><td class="t-val">0° to -0.3°</td><td class="t-why">Less camber than road — loose surfaces don't benefit from aggressive angles</td></tr>
-          ` : `
-          <tr><td class="t-setting">Street / Circuit</td><td class="t-val">-1.0° to -1.5°</td><td class="t-val">-0.7° to -1.2°</td><td class="t-why">Compensates for body roll. More negative as class increases (more cornering force)</td></tr>
-          `}
-        </table>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">📐</span><span class="gb-title">Toe — pointing the wheels</span><span class="gb-badge badge-opt">Optional fine-tune</span></div>
-      <div class="gb-body">
-        <p><strong>Toe-in</strong> (wheels point slightly inward) = more straight-line stability, slightly slower steering response.<br><strong>Toe-out</strong> (wheels point slightly outward) = sharper turn-in, less stable at speed.</p>
-        <table class="tune-table">
-          <tr><th>Setting</th><th>Effect</th><th>Recommended</th></tr>
-          <tr><td class="t-setting">Front toe</td><td class="t-why">Turn-in response</td><td class="t-val">${isDrift ? '+0.1° out' : '0.0° (neutral)'}</td></tr>
-          <tr><td class="t-setting">Rear toe</td><td class="t-why">High-speed stability</td><td class="t-val">${isDrift ? '+0.1° in' : '+0.1° in'}</td></tr>
-        </table>
-        <div class="tip-box"><strong>RULE //</strong> In Forza Horizon, toe has less effect than in real life. Keep it close to 0 and only adjust if you have a specific handling problem. Caster (below) is more impactful for drift.</div>
-      </div>
-    </div>
-    ${isDrift ? `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">📐</span><span class="gb-title">Caster — essential for drift</span><span class="gb-badge badge-must">Important for drift</span></div>
-      <div class="gb-body">
-        <p>Caster is the backward tilt of the steering axis. <strong>Higher caster</strong> = more self-centering force, better feel when the car is sideways, more camber gain during steering lock.</p>
-        <p>For drift: set caster as high as it goes — usually <strong>max 7°</strong>. This helps the car feel planted and makes transitions predictable.</p>
-      </div>
-    </div>` : ''}`;
+function fgInput(key,label,rec,hint,curVal){
+  const filled=curVal&&curVal!==''?'filled':'';
+  return `<div class="fg-cell ${filled}">
+    <div class="fg-cell-label">${esc(label)}</div>
+    <input class="fg-input" data-k="${ea(key)}" type="text" value="${ea(curVal||'')}" placeholder="${ea(rec)}">
+    <div class="fg-rec ${curVal?'has-val':''}">${curVal?'✓ set':'Suggested: '+esc(rec)}</div>
+    ${hint?`<div class="fg-hint-inline">${hint}</div>`:''}
+  </div>`;
+}
 
-  case 'suspension': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🌀</span><span class="gb-title">Springs — the foundation</span><span class="gb-badge badge-rec">Tune carefully</span></div>
-      <div class="gb-body">
-        <p>Springs hold the car up. <strong>Stiffer springs</strong> = less body roll, more responsive, but harsher over bumps. <strong>Softer springs</strong> = more mechanical grip over rough surfaces but more body roll.</p>
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Front spring</th><th>Rear spring</th><th>Key principle</th></tr>
-          ${isDrift ? `<tr><td class="t-setting">Drift</td><td class="t-val">Soft-Medium</td><td class="t-val">Stiff</td><td class="t-why">Soft front = weight transfer during initiation. Stiff rear = stable platform while sliding</td></tr>` :
-            isDrag ? `<tr><td class="t-setting">Drag</td><td class="t-val">Soft</td><td class="t-val">Stiff</td><td class="t-why">Soft front = nose lifts slightly on launch (transfers weight to rear). Stiff rear = planted under acceleration</td></tr>` :
-            isDirt ? `<tr><td class="t-setting">Dirt / Rally</td><td class="t-val">Very soft</td><td class="t-val">Soft</td><td class="t-why">Soft everything = suspension travels over bumps without losing traction</td></tr>` :
-            `<tr><td class="t-setting">Street / Circuit</td><td class="t-val">Medium-Firm</td><td class="t-val">Firm</td><td class="t-why">Balanced stiffness reduces roll, keeps tyres in contact through fast direction changes</td></tr>`}
-        </table>
-        <div class="warn-box"><strong>COMMON MISTAKE //</strong> Don't go too stiff. A car that bounces over track imperfections has less grip than a softer car. Stiff is not always faster.</div>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🌀</span><span class="gb-title">Ride height</span><span class="gb-badge badge-rec">Tune this</span></div>
-      <div class="gb-body">
-        <p><strong>Lower ride height</strong> = lower centre of gravity, less roll, faster. But too low causes bottoming out and handling problems. <strong>Higher ride height</strong> = better bump clearance for dirt and off-road.</p>
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Target</th></tr>
-          <tr><td class="t-setting">Street / Circuit</td><td class="t-val">As low as possible without bottoming out</td></tr>
-          <tr><td class="t-setting">Drift</td><td class="t-val">Low — similar to street, maybe +1–2cm</td></tr>
-          <tr><td class="t-setting">Drag</td><td class="t-val">Low front, slightly higher rear for weight transfer</td></tr>
-          <tr><td class="t-setting">Dirt / Rally</td><td class="t-val">High — you need clearance over bumps and crests</td></tr>
-          <tr><td class="t-setting">Off-road</td><td class="t-val">Maximum — no compromise</td></tr>
-        </table>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🌀</span><span class="gb-title">Dampers (bump & rebound)</span><span class="gb-badge badge-opt">Advanced</span></div>
-      <div class="gb-body">
-        <p><strong>Bump damping</strong> controls how fast the suspension compresses when hitting a bump.<br><strong>Rebound damping</strong> controls how fast it extends back out.</p>
-        <p>For most builds: <strong>rebound slightly higher than bump</strong>. This gives a settled, planted feel. The car should settle after a bump — not bounce.</p>
-        <p>If the car feels <em>bouncy</em> → increase rebound. If the car feels <em>stiff over bumps</em> → decrease bump damping.</p>
-        <div class="tip-box"><strong>START HERE //</strong> Set both bump and rebound to medium (centre of the range). Test the car. Then adjust based on feel. Don't change both at once.</div>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🌀</span><span class="gb-title">Anti-roll bars (ARB)</span><span class="gb-badge badge-rec">Important</span></div>
-      <div class="gb-body">
-        <p>ARBs resist body roll in corners. <strong>Stiffer ARB</strong> = less roll, more responsive, but can cause inside wheel lift. <strong>Softer ARB</strong> = more roll, more mechanical grip, better on bumpy surfaces.</p>
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Front ARB</th><th>Rear ARB</th></tr>
-          ${isDrift ? `<tr><td class="t-setting">Drift</td><td class="t-val">Low / Soft</td><td class="t-val">High / Stiff</td></tr><tr><td colspan="3" class="t-why">Low front = easy rotation. Stiff rear = stable sliding platform. This imbalance is what makes the rear break away.</td></tr>` :
-          isDirt ? `<tr><td class="t-setting">Dirt / Rally</td><td class="t-val">Soft</td><td class="t-val">Soft</td></tr><tr><td colspan="3" class="t-why">Both soft = suspension works independently over rough terrain. ARBs fight bumps.</td></tr>` :
-          isDrag ? `<tr><td class="t-setting">Drag</td><td class="t-val">Soft</td><td class="t-val">Stiff</td></tr><tr><td colspan="3" class="t-why">Soft front = weight transfer to rear. Stiff rear = planted under acceleration.</td></tr>` :
-          `<tr><td class="t-setting">Street / Circuit</td><td class="t-val">Medium</td><td class="t-val">Medium-Firm</td></tr><tr><td colspan="3" class="t-why">Slightly stiffer rear than front = mild understeer tendency which is more predictable than oversteer.</td></tr>`}
-        </table>
-      </div>
-    </div>`;
+function fgGrid(cells){return `<div class="fg-grid">${cells.join('')}</div>`}
 
-  case 'aero': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">💨</span><span class="gb-title">How aero works</span><span class="gb-badge badge-rec">Install if available</span></div>
-      <div class="gb-body">
-        <p>Aerodynamic downforce presses the car into the road at speed. More downforce = more grip at high speed, but also more drag = lower top speed.</p>
-        <p><strong>Front aero</strong> controls understeer/oversteer balance at speed. <strong>Rear aero</strong> controls high-speed stability.</p>
-        <div class="warn-box"><strong>IMPORTANT //</strong> Aero only works at higher speeds. Below ~80 mph it has almost no effect. Don't sacrifice top speed for aero if you're on a slow, twisty track.</div>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">💨</span><span class="gb-title">Aero settings by discipline</span></div>
-      <div class="gb-body">
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Front aero</th><th>Rear aero</th><th>Notes</th></tr>
-          <tr><td class="t-setting">Street / Circuit</td><td class="t-val">${highClass?'Medium':'N/A'}</td><td class="t-val">${highClass?'High':'N/A'}</td><td class="t-why">${highClass?'Mandatory at S2+ — stability and cornering at high speed':'Not needed in lower classes'}</td></tr>
-          <tr><td class="t-setting">Drift</td><td class="t-val">Minimum</td><td class="t-val">Minimum</td><td class="t-why">Too much downforce kills the rear slide. Keep it low or remove entirely</td></tr>
-          <tr><td class="t-setting">Drag</td><td class="t-val">None</td><td class="t-val">None</td><td class="t-why">Every lb of downforce is drag. Remove all aero for pure drag builds</td></tr>
-          <tr><td class="t-setting">Dirt / Rally</td><td class="t-val">Low</td><td class="t-val">Low</td><td class="t-why">A little helps stability at speed on mixed surfaces</td></tr>
-          <tr><td class="t-setting">Off-road</td><td class="t-val">None</td><td class="t-val">None</td><td class="t-why">Speeds too low to matter. Weight from aero is not worth it</td></tr>
-        </table>
-        <div class="tip-box"><strong>BALANCE TIP //</strong> If the car oversteers at high speed → increase front aero slightly or decrease rear. If it understeers at speed → reduce front aero or increase rear.</div>
-      </div>
-    </div>`;
+function getStepParts(id,car,d,dr,cl,isD,isDr,isDt,hCl){
+  const t=car.tune;
+  const tip=(txt)=>`<div class="hbox hbox-tip"><strong>TIP //</strong> ${txt}</div>`;
+  const warn=(txt)=>`<div class="hbox hbox-warn"><strong>⚠</strong> ${txt}</div>`;
+  const good=(txt)=>`<div class="hbox hbox-good"><strong>✓</strong> ${txt}</div>`;
+  const htab=(hdrs,rows)=>`<table class="htable"><tr>${hdrs.map(h=>`<th>${h}</th>`).join('')}</tr>${rows.map(r=>`<tr>${r.map((c,i)=>`<td class="${['th','tv','tw'][Math.min(i,2)]}">${c}</td>`).join('')}</tr>`).join('')}</table>`;
 
-  case 'brakes': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🔴</span><span class="gb-title">Brake upgrades</span><span class="gb-badge badge-opt">Often overlooked</span></div>
-      <div class="gb-body">
-        <p>Race brakes stop you faster and are more resistant to fade under repeated hard braking. Worth installing on any build above C class.</p>
-        <p>More important than the upgrade itself is the <strong>brake bias</strong> and <strong>brake pressure</strong> settings.</p>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🔴</span><span class="gb-title">Brake bias</span><span class="gb-badge badge-rec">Tune this</span></div>
-      <div class="gb-body">
-        <p>Brake bias controls how much braking force goes to the front vs rear wheels. <strong>More front bias</strong> = nose dives under braking but grips better. <strong>More rear bias</strong> = rear locks up first, which can rotate the car — useful for drift.</p>
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Bias</th><th>Why</th></tr>
-          <tr><td class="t-setting">Street / Circuit</td><td class="t-val">56–58% front</td><td class="t-why">Most weight transfers forward under braking. Front bias compensates</td></tr>
-          <tr><td class="t-setting">Drift</td><td class="t-val">50–53% front</td><td class="t-why">Less front bias = more rear involvement under braking = easier rotation entry</td></tr>
-          <tr><td class="t-setting">Drag</td><td class="t-val">55% front</td><td class="t-why">Rarely braking hard. Balanced is fine</td></tr>
-          <tr><td class="t-setting">Dirt / Rally</td><td class="t-val">52–55% front</td><td class="t-why">Less front bias on loose surfaces — front locks too easily</td></tr>
-        </table>
-        <div class="tip-box"><strong>FEEL //</strong> If the rear steps out under hard braking → increase front bias. If the front locks → decrease front bias.</div>
-      </div>
-    </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🔴</span><span class="gb-title">Brake pressure</span></div>
-      <div class="gb-body">
-        <p>Brake pressure is how hard the brakes bite. <strong>100%</strong> = maximum. On most builds this is fine. <strong>Reduce it</strong> if wheels lock under normal braking — especially on lower-class cars with sport tyres.</p>
-        <p>For drag: lower pressure (80–90%) to avoid triggering ABS unnecessarily at the line.</p>
-      </div>
-    </div>`;
+  switch(id){
 
-  case 'diff': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">↔</span><span class="gb-title">What a differential does</span><span class="gb-badge badge-must">Most impactful for feel</span></div>
-      <div class="gb-body">
-        <p>A differential allows the two driven wheels to spin at different speeds (necessary for cornering — the outside wheel travels further). A <strong>tunable diff</strong> lets you control how tightly the wheels are locked together.</p>
-        <p><strong>Acceleration lock</strong> = how locked the diff is when you press the throttle.<br><strong>Deceleration lock</strong> = how locked it is when you lift off the throttle.</p>
-      </div>
+  case 'tyres': return {
+    hint:`<p>Tyres are the single biggest performance lever. Every other setting assumes the right tyre is doing its job.</p>
+    <p>Tyre pressure controls the size and shape of the contact patch — the bit that touches the road. <strong>Too low</strong> = squirmy, unpredictable. <strong>Too high</strong> = twitchy, skittish under braking.</p>
+    ${htab(['Discipline','Front','Rear'],[
+      isD?['Drift','30–32 psi','28–32 psi']:
+      isDr?['Drag','35–38 psi','24–28 psi']:
+      isDt?['Dirt / Rally','26–28 psi','26–28 psi']:
+      ['Street / Circuit','32–35 psi','32–35 psi']
+    ])}
+    ${isD?tip('Drift cars often run Sport compound intentionally — the lower grip level makes initiating slides easier. Semi-slick rear if you want more stability.'):
+      isDr?tip('Low rear pressure = bigger rear contact patch for launch traction. High front = reduces drag on the front axle.'):
+      tip('Start with the suggested values and adjust by feel. 1 psi at a time.')}
+    <p><strong>After your first run:</strong> if the car feels vague or floaty, add 1–2 psi. If it's bouncing or has sharp unpredictable reactions, drop 1–2 psi.</p>`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Tyre pressure</div>
+      ${fgGrid([
+        fgInput('tyrF','Front pressure',isD?'30–32 psi':isDr?'36 psi':isDt?'27 psi':'33 psi','↑ = sharper response, less grip',t.tyrF),
+        fgInput('tyrR','Rear pressure',isD?'29–32 psi':isDr?'26 psi':isDt?'27 psi':'33 psi',isD?'↓ = easier to break traction':isDr?'↓ = bigger contact patch on launch':'↑ = more stability',t.tyrR),
+      ])}
     </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">↔</span><span class="gb-title">Diff tuning by discipline</span></div>
-      <div class="gb-body">
-        <table class="tune-table">
-          <tr><th>Setting</th><th>Low (0%)</th><th>High (100%)</th></tr>
-          <tr><td class="t-setting">Rear accel</td><td class="t-why">Each rear wheel spins freely → easy to rotate, but inside wheel spins on exit</td><td class="t-why">Both rear wheels locked together → maximum traction, harder to rotate</td></tr>
-          <tr><td class="t-setting">Rear decel</td><td class="t-why">Rear unlocks on lift-off → stable, less rotation</td><td class="t-why">Rear locks on lift-off → rear tries to rotate the car → useful for trail-braking</td></tr>
-          <tr><td class="t-setting">Front accel</td><td class="t-why">Understeer on exit (FWD/AWD)</td><td class="t-why">Better corner exit traction (FWD/AWD)</td></tr>
-        </table>
-        <div style="height:12px"></div>
-        <table class="tune-table">
-          <tr><th>Discipline</th><th>Front accel</th><th>Rear accel</th><th>Rear decel</th></tr>
-          ${isDrift ? `<tr><td class="t-setting">Drift</td><td class="t-val">5–15%</td><td class="t-val">85–100%</td><td class="t-val">30–50%</td></tr><tr><td colspan="4" class="t-why">Low front = easy rotation. Full rear lock = both wheels spin together = maximum slide. Some decel lock = more predictable trail brake entries.</td></tr>` :
-          isDrag ? `<tr><td class="t-setting">Drag</td><td class="t-val">15%</td><td class="t-val">100%</td><td class="t-val">0%</td></tr><tr><td colspan="4" class="t-why">Full rear lock = both driven wheels pull equally = maximum launch traction. Zero decel = no lockup on lift-off.</td></tr>` :
-          isDirt ? `<tr><td class="t-setting">Dirt / Rally</td><td class="t-val">40%</td><td class="t-val">60–70%</td><td class="t-val">5–10%</td></tr><tr><td colspan="4" class="t-why">Moderate lock in both directions. Loose surfaces need the diff to work to transfer torque across the axle.</td></tr>` :
-          `<tr><td class="t-setting">Street / Circuit</td><td class="t-val">30%</td><td class="t-val">30–45%</td><td class="t-val">10–15%</td></tr><tr><td colspan="4" class="t-why">Balanced lock helps corner exit without causing oversteer. Too high on accel causes snap oversteer mid-corner exit.</td></tr>`}
-        </table>
-        <div class="warn-box"><strong>RWD STREET WARNING //</strong> If rear accel lock is too high (above 50–60%) on a street/circuit RWD, the car will snap oversteer on corner exit under throttle. Start at 25–30% and increase gradually.</div>
+    <div class="field-group">
+      <div class="fg-label">Tyre compound note</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:10px 12px;font-size:12px;color:var(--muted);line-height:1.6">
+        Set your compound in the <strong>Upgrades menu</strong> before tuning.<br>
+        ${isD?'→ Sport rear (or Semi-slick) / lower compound front':
+          isDr?'→ Racing Slick or best compound for your PI budget':
+          isDt?'→ Rally / Dirt compound — mandatory for loose surfaces':
+          '→ Semi-slick (A/S1) or Racing Slick (S2/R/X)'}
       </div>
-    </div>`;
+    </div>`
+  };
 
-  case 'gearing': return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">⚡</span><span class="gb-title">Final drive — the most used setting</span><span class="gb-badge badge-rec">Tune for track</span></div>
-      <div class="gb-body">
-        <p><strong>Final drive</strong> is a multiplier on all gear ratios. Moving it toward <strong>Short</strong> = quicker acceleration but lower top speed. Moving toward <strong>Long</strong> = higher top speed but slower acceleration.</p>
-        <p>This is the <strong>most commonly adjusted gearing setting</strong> because it affects everything at once without changing individual gear spacing.</p>
-        <table class="tune-table">
-          <tr><th>Scenario</th><th>Adjust to</th></tr>
-          <tr><td class="t-setting">Hitting rev limiter before end of straight</td><td class="t-val">Longer final drive</td></tr>
-          <tr><td class="t-setting">Not in power band at corner exit</td><td class="t-val">Shorter final drive</td></tr>
-          <tr><td class="t-setting">Drift — want quicker throttle response</td><td class="t-val">Shorter</td></tr>
-          <tr><td class="t-setting">Drag — need power earlier</td><td class="t-val">Short (1st gear), longer overall</td></tr>
-        </table>
-      </div>
+  case 'alignment': return {
+    hint:`<p>Alignment controls how the tyre sits against the road. Get this right and the tyre works with you. Get it wrong and you're fighting the car constantly.</p>
+    <p><strong>Camber:</strong> tilting the top of the wheel inward (negative camber) keeps the tyre flat on the road as the car body rolls in corners. Too much = inside tyre edge wear, less straight-line grip.</p>
+    ${htab(['Setting','Recommended','Why'],[
+      isD?['Front camber','-2.0° to -2.5°','More negative = more stable at angle']:
+      isDr?['Front camber','0.0°','Zero = max contact patch on launch']:
+      isDt?['Front camber','-0.2° to -0.4°','Less than road — loose doesn\'t need aggressive camber']:
+      ['Front camber','-1.0° to -1.5°','Compensates for body roll in corners'],
+      isD?['Rear camber','-1.5° to -2.0°','Helps tyre contact during sustained slide']:
+      isDr?['Rear camber','0.0°','Zero = max traction, no angle waste']:
+      isDt?['Rear camber','0° to -0.2°','Keep it low for surface conforming']:
+      ['Rear camber','-0.7° to -1.2°','Less than front — rear doesn\'t roll as much'],
+    ])}
+    <p><strong>Toe:</strong> pointing wheels slightly in or out. In Forza Horizon, keep this near 0 — it has less effect than in real life. ${isD?'A tiny amount of toe-out front can help initiation.':''}</p>
+    ${isD?`<p><strong>Caster:</strong> This is critical for drift. Higher caster = more self-centering force = the car feels more planted sideways. Set it to <strong>maximum (7°)</strong>.</p>`:''}
+    ${tip('Change camber in small steps — 0.1° at a time. Feel the difference on a consistent route before adjusting again.')}`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Camber</div>
+      ${fgGrid([
+        fgInput('camF','Front camber',isD?'-2.2°':isDr?'0.0°':isDt?'-0.3°':'-1.2°','↓ = more negative = more cornering grip',t.camF),
+        fgInput('camR','Rear camber',isD?'-1.5°':isDr?'0.0°':isDt?'-0.2°':'-0.9°',isD?'More − = stable slide platform':'↓ = more negative',t.camR),
+      ])}
     </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">⚡</span><span class="gb-title">Individual gear ratios</span><span class="gb-badge badge-opt">Advanced</span></div>
-      <div class="gb-body">
-        <p>Individual gears let you optimise each shift point. For most builds, <strong>you don't need to touch individual gears</strong> — adjust final drive only.</p>
-        <p>If you do want to tune individual gears:</p>
-        <p><strong>1st gear</strong> — for drag: make it short enough to not wheelspin but long enough to not immediately need 2nd. For drift: short enough to keep RPM in power band.</p>
-        <p><strong>Spacing between gears</strong> — equal spacing is usually fine. Some prefer closer spacing in the lower gears for better launch, wider in the top gears for top speed.</p>
-        ${isDrift ? '<div class="tip-box"><strong>DRIFT //</strong> Drift builds often run a shorter final drive and tight gear spacing so you stay in the powerband during long sustained angles.</div>' : ''}
-        ${isDrag ? '<div class="tip-box"><strong>DRAG //</strong> 2-speed or 3-speed drag builds (short 1st/2nd, then one long top gear) can be faster than 6-speed if the car has enough torque to pull them.</div>' : ''}
-      </div>
-    </div>`;
+    <div class="field-group">
+      <div class="fg-label">Toe</div>
+      ${fgGrid([
+        fgInput('toeF','Front toe',isD?'+0.1° out':'0.0°','+ = toe-out = sharper turn-in',t.toeF),
+        fgInput('toeR','Rear toe','+0.1° in','+ = toe-in = more stable at speed',t.toeR),
+      ])}
+    </div>
+    <div class="field-group">
+      <div class="fg-label">Caster</div>
+      ${fgGrid([
+        fgInput('cast','Caster',isD?'7.0° (max)':'5.0°',isD?'Higher = more stable sideways — set to max for drift':'Higher = more stable at speed',t.cast),
+      ])}
+    </div>`
+  };
+
+  case 'arb': return {
+    hint:`<p>Anti-roll bars (ARBs) resist the body rolling in corners. Think of them as the difference between a sports car and a boat.</p>
+    <p>The <strong>front/rear balance</strong> is what really matters — it controls whether the car over or understeers.</p>
+    ${htab(['Setting','Stiffer','Softer'],[
+      ['Front ARB','Less understeer, faster turn-in','More understeer, more mechanical grip'],
+      ['Rear ARB','More stable, less oversteer','Easier to rotate, more oversteer'],
+    ])}
+    ${isD?`<p>For drift you want <strong>low front, high rear</strong>. This imbalance is intentional — soft front lets the nose rotate easily, stiff rear keeps the back planted as a stable sliding platform. This is one of the most important settings for drift feel.</p>`:
+    isDt?`<p>For dirt and rally, <strong>soft both ends</strong>. You want each wheel to react independently over rough terrain. Stiff ARBs force wheels to lift rather than absorb.</p>`:
+    `<p>For road/circuit, slightly <strong>stiffer rear than front</strong> creates a mild understeer tendency — the car pushes wide rather than spinning. This is more predictable and easier to catch.</p>`}
+    ${tip('If the car understeers → soften front ARB or stiffen rear. If it oversteers → stiffen front or soften rear.')}`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Anti-roll bars</div>
+      ${fgGrid([
+        fgInput('arbF','Front ARB',isD?'Low / Soft':isDt?'Soft':'Medium',isD?'↓ = easier rotation':'↓ = more mechanical grip',t.arbF),
+        fgInput('arbR','Rear ARB',isD?'High / Stiff':isDt?'Soft':'Medium-Firm',isD?'↑ = stable sliding platform':isDt?'↓ = surface conforming':'↑ = more stable on exit',t.arbR),
+      ])}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:12px;font-size:12px;color:var(--muted);line-height:1.7;margin-top:4px">
+      <strong style="color:var(--text)">How to test ARBs on track:</strong><br>
+      Find a medium-speed corner. Enter at the same speed each lap.<br>
+      ${isD?'Does it initiate with a flick? Too soft rear ARB — firm it up. Does it refuse to rotate? Front ARB too stiff.':'Does the front push wide? Front ARB too stiff, soften it. Does the rear slide on exit? Rear ARB too soft, firm it up.'}
+    </div>`
+  };
+
+  case 'suspension': return {
+    hint:`<p>Springs and dampers (bump/rebound) are what physically absorb bumps and control how the car's weight moves. Get this wrong and the car will either skip over the road or wallow through corners.</p>
+    <p><strong>Springs:</strong> stiffness controls body roll and weight transfer speed. ${isD?'Soft front = fast weight transfer at initiation. Stiff rear = planted slide platform.':isDr?'Soft front = nose rises on launch, transferring weight rearward. Stiff rear = prevents squat.':isDt?'Soft everything = suspension travels over bumps without losing traction.':'Stiffer = less roll, faster response. But too stiff = tyres skip over bumps.'}</p>
+    <p><strong>Ride height:</strong> ${isDt||d==='offroad'?'Higher = more bump clearance. This is non-negotiable for off-road builds — max it out.':'Lower = lower centre of gravity, less roll, faster lap times. Go as low as possible without bottoming out on track.'}</p>
+    <p><strong>Bump damping</strong> controls how fast suspension compresses. <strong>Rebound</strong> controls how fast it extends back. A bouncy car needs more rebound. A car stiff over bumps needs less bump.</p>
+    ${warn('Don\'t go too stiff. A car bouncing off bumps has less grip than a softer setup. Stiff ≠ fast.')}
+    ${tip('Set bump and rebound to medium first. Drive. Then adjust based on feel — one at a time.')}`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Springs</div>
+      ${fgGrid([
+        fgInput('sprF','Front spring',isD?'Soft-Medium':isDr?'Soft':isDt?'Very Soft':'Med-Firm',isD?'↓ = faster initiation weight transfer':'↑ = stiffer = less roll',t.sprF),
+        fgInput('sprR','Rear spring',isD?'Stiff':isDr?'Stiff':isDt?'Soft':'Firm',isD?'↑ = stable slide platform':isDr?'↑ = planted under acceleration':'↑ = stiffer = less squat',t.sprR),
+      ])}
+    </div>
+    <div class="field-group">
+      <div class="fg-label">Ride height</div>
+      ${fgGrid([
+        fgInput('rhdF','Front ride height',isDt||d==='offroad'?'High / Max':'Min (lowest possible)',isDt?'↑ = more bump clearance':'↓ = lower CoG = faster',t.rhdF),
+        fgInput('rhdR','Rear ride height',isDt||d==='offroad'?'High / Max':isDr?'Slightly higher than front':'Min','',t.rhdR),
+      ])}
+    </div>
+    <div class="field-group">
+      <div class="fg-label">Bump damping</div>
+      ${fgGrid([
+        fgInput('bmpF','Front bump',isDt?'Soft':'Moderate','Controls compression speed over bumps',t.bmpF),
+        fgInput('bmpR','Rear bump',isDt?'Soft':isDr?'Stiff':'Moderate','',t.bmpR),
+      ])}
+    </div>
+    <div class="field-group">
+      <div class="fg-label">Rebound damping</div>
+      ${fgGrid([
+        fgInput('rbF','Front rebound',isDt?'Soft':isD?'Mod-High':'Medium','↑ = less bouncy after compression',t.rbF),
+        fgInput('rbR','Rear rebound',isDt?'Soft':isD?'Moderate':'Medium','',t.rbR),
+      ])}
+    </div>`
+  };
+
+  case 'aero': return {
+    hint:`<p>Aerodynamic downforce pushes the car into the road at speed. More downforce = more cornering grip at high speed. The trade-off is drag = lower top speed.</p>
+    <p>Important: <strong>aero only works above ~80 mph</strong>. On slow, tight tracks it adds weight without benefit.</p>
+    ${hCl?good(`At ${cl} class, aero is mandatory — install race aero in the Upgrades menu first.`):
+    isD?warn('Keep aero minimal or off entirely. Downforce fights the rear slide you need.'):
+    isDr?warn('Remove all aero — every lb of downforce is drag on a drag strip.'):
+    ''}
+    <p><strong>Front vs rear balance:</strong> more front aero resists understeer at speed. More rear aero resists oversteer at speed. If the car feels nervous at high speed → add rear. If it understeers through fast corners → reduce front.</p>
+    ${tip('Set rear first, then balance with front. Small adjustments — aero effects are subtle on most tracks.')}`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Downforce</div>
+      ${fgGrid([
+        fgInput('aero','Front / Rear aero',isD?'Minimum / Minimum':isDr?'None / None':hCl?'Medium / High':'Low / Med-Low',isD?'Low or off — don\'t fight the slide':isDr?'Remove it entirely':hCl?'Mandatory at this class level':'More rear = more high-speed stability',t.aero),
+      ])}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:12px;font-size:12px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text)">How to test aero on track:</strong><br>
+      Find your longest straight and a fast sweeping corner.<br>
+      Does the car feel unstable through the fast corner? → Add rear aero.<br>
+      Are you losing top speed without gaining stability? → Reduce aero.
+    </div>`
+  };
+
+  case 'brakes': return {
+    hint:`<p>Brakes in Forza are often overlooked but brake <strong>bias</strong> and <strong>pressure</strong> directly affect how the car rotates entering corners.</p>
+    <p><strong>Brake bias</strong> controls the front/rear split. More front bias = stable under braking but the car stays straight. More rear = rear locks up first, naturally rotating the car into the corner — great for drift and trail-braking.</p>
+    ${htab(['Discipline','Bias','Why'],[
+      ['Street / Circuit','56–58% front','Weight transfers forward — front needs more braking force'],
+      ['Drift','50–53% front','Less front = rear involvement = rotation on entry'],
+      ['Drag','55% front','Rarely braking hard — balanced is fine'],
+      ['Dirt / Rally','52–55% front','Front locks too easily on loose surfaces'],
+    ])}
+    <p><strong>Brake pressure:</strong> 100% for most builds. Drop to 80–90% if wheels lock under light braking. For drag, lower pressure avoids triggering ABS at the start line.</p>
+    ${tip(isD?'Try trail braking — keep slight pressure on the brake as you turn in. This helps rotation. But only works if rear bias is high enough.':'If the rear steps out under hard braking → increase front bias by 1–2%. If front locks → decrease.')}`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Brakes</div>
+      ${fgGrid([
+        fgInput('brkB','Brake bias',isD?'52% Front':isDr?'55% Front':isDt?'53% Front':'57% Front',isD?'↓ = more rear = easier rotation entry':'↑ front = more stable braking',t.brkB),
+        fgInput('brkP','Brake pressure',isDr?'80%':'100%','↓ if wheels lock under braking',t.brkP),
+      ])}
+    </div>`
+  };
+
+  case 'diff': return {
+    hint:`<p>The differential controls how the driven wheels share power. A fully open diff lets each wheel spin freely. A locked diff forces them to spin together.</p>
+    <p><strong>Acceleration lock</strong> = how locked when you press the throttle. High lock = both rear wheels pull equally = maximum traction but harder to rotate.</p>
+    <p><strong>Deceleration lock</strong> = how locked when you lift off. High decel lock = rear snaps in on trail braking — useful for drift entries, dangerous on circuit.</p>
+    ${htab(['Build','Front accel','Rear accel','Rear decel'],[
+      isD?['Drift','5–15%','85–100%','30–50%']:
+      isDr?['Drag','15%','100%','0%']:
+      isDt?['Dirt / Rally','40%','60–70%','5–10%']:
+      ['Street / Circuit','25–35%','30–45%','10–15%'],
+    ])}
+    ${isD?good('Full rear lock (100%) = both rear tyres spin together = maximum sideways traction. This is the most important diff setting for drift.'):
+    warn('RWD street: don\'t exceed 50–60% rear accel lock without testing — above that, the car will snap oversteer on corner exit.')}
+    ${tip('Adjust rear diff accel in 5–10% steps. Always test on the same corner exit before adjusting further.')}`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Differential</div>
+      ${fgGrid([
+        fgInput('dfF','Front diff accel',isD?'5–15%':isDr?'15%':isDt?'40%':'30%',isD?'↓ = easier rotation':isDr?'Low — rear does the work':'↑ = better front traction out of corner',t.dfF),
+        fgInput('dfRA','Rear diff accel',isD?'100%':isDr?'100%':isDt?'65%':'35%',isD?'↑ = max slide control — set to full':isDr?'Full = both rear wheels pull equally':'↑ = more traction on exit (but snappier)',t.dfRA),
+        fgInput('dfRD','Rear diff decel',isD?'40%':isDr?'0%':isDt?'10%':'12%',isD?'↑ = more rotation on trail brake':'↑ = car rotates more on lift-off',t.dfRD),
+      ])}
+    </div>`
+  };
+
+  case 'gearing': return {
+    hint:`<p>Gearing determines when and how quickly your car builds speed through each gear. <strong>Final drive</strong> is the most impactful single adjustment — it multiplies all your gear ratios at once.</p>
+    <p>Move final drive <strong>shorter</strong> → car accelerates faster, hits rev limiter sooner. Move it <strong>longer</strong> → higher top speed, slower acceleration.</p>
+    ${htab(['Problem on track','Fix'],[
+      ['Hitting rev limiter before end of straight','Longer final drive'],
+      ['Not in power band coming out of corner','Shorter final drive'],
+      ['Drift — want more throttle response','Shorter'],
+      ['Drag — need to maximise launch and top speed','Short 1st, optimise overall'],
+    ])}
+    <p>Individual gear ratios: for most builds, <strong>don't touch these</strong> — adjust final drive only. The exception is drag racing where you might want a very short 1st gear for the launch.</p>
+    ${tip('Set final drive last, once everything else is dialled in. Match it to your longest straight — you should just touch the limiter at the end.')}`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Final drive</div>
+      ${fgGrid([
+        fgInput('finS','Final drive — snap',isD?'Short (aggressive)':isDr?'Short 1st gear':'Short','Controls response / acceleration',t.finS),
+        fgInput('finL','Final drive — sustain',isD?'Longer for sustained angles':isDr?'Tall overall for top speed':'Long','Controls top speed',t.finL),
+      ])}
+    </div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:12px;font-size:12px;color:var(--muted);line-height:1.7;margin-top:4px">
+      <strong style="color:var(--text)">Track test for gearing:</strong><br>
+      Do one full lap noting: are you ever at the limiter (too short)? Are you ever stuck in a gear too long (too long)? Adjust final drive to bring every straight just to the limiter at the end.
+    </div>`
+  };
 
   case 'checklist':
-    const checks = isDrift ? [
-      'Race tyres (Sport or Semi-slick rear, lower compound front)',
-      'Race suspension installed and tuned',
+    const chks=isD?[
+      'Race tyres installed (Sport or Semi-slick)',
+      'Race suspension installed',
       'Race differential installed',
-      'FD Supercharger (or FI with quick response)',
+      'FD Supercharger (not turbo — instant response)',
       'Front camber: -2.0° to -2.5°',
       'Rear camber: -1.5° to -2.0°',
-      'Caster: Maximum (7°)',
-      'Front ARB: Low/Soft',
-      'Rear ARB: High/Stiff',
+      'Caster at maximum (7°)',
+      'Front ARB: Low / Soft',
+      'Rear ARB: High / Stiff',
       'Front spring: Soft-Medium',
       'Rear spring: Stiff',
-      'Ride height: Low front and rear',
-      'Aero: Minimum or none',
+      'Ride height: Low both ends',
+      'Aero: Minimum or off',
       'Brake bias: 50–53% front',
       'Rear diff accel: 85–100%',
       'Front diff accel: 5–15%',
       'Rear diff decel: 30–50%',
-      'Final drive: Short — keeps you in power band',
-      'Tyre pressure: 28–32 psi both ends',
-    ] : isDrag ? [
-      'Racing slick tyres (or best compound available)',
+      'Final drive: Short',
+    ]:isDr?[
+      'Racing slick tyres',
       'Race suspension installed',
       'Race differential installed',
-      'Forced induction with quick spool / supercharger',
       'Camber: 0.0° front and rear',
       'Toe: 0.0° front and rear',
-      'Front spring: Soft (for weight transfer)',
+      'Front spring: Soft',
       'Rear spring: Stiff',
-      'Rear ride height: Slightly higher than front',
-      'Aero: None',
+      'Rear ride height slightly higher than front',
+      'All aero removed',
       'Brake pressure: 80–85%',
       'Rear diff accel: 100%',
-      'Front diff accel: 15% (AWD only)',
       'Rear diff decel: 0%',
-      'Final drive: Short 1st gear, optimised overall',
-      'Front tyre pressure: 35–38 psi',
-      'Rear tyre pressure: 24–28 psi',
-    ] : isDirt ? [
+      'Front tyre: 36–38 psi',
+      'Rear tyre: 24–26 psi',
+    ]:isDt?[
       'Rally/dirt tyres installed',
       'Rally suspension installed',
       'Race differential installed',
-      'Camber: -0.2° to -0.4° front',
-      'Ride height: Maximum (or near maximum)',
+      'Ride height: Maximum',
       'Springs: Very soft both ends',
       'ARBs: Soft both ends',
-      'Damping: Soft — allows suspension travel',
-      'Brake bias: 52–55% front',
       'Rear diff accel: 60–70%',
-      'Aero: Low or none',
+      'Brake bias: 52–55% front',
+      'Camber: Light (-0.2° to -0.4° front)',
       'Tyre pressure: 26–28 psi both ends',
-      'Final drive: Medium — matched to stage length',
-    ] : [
-      'Race tyres (semi-slick or slick depending on class)',
+    ]:[
+      'Race tyres installed',
       'Race suspension installed',
       'Race differential installed',
-      highClass ? 'Adjustable aero installed and set to Medium-High rear' : 'Aero: Not required at this class',
+      hCl?'Race aero installed (mandatory at this class)':'Aero: not required at this class',
       'Race brakes installed',
       'Front camber: -1.0° to -1.5°',
       'Rear camber: -0.7° to -1.2°',
       'Front ARB: Medium',
       'Rear ARB: Medium-Firm',
-      'Springs: Medium-Firm (balanced)',
-      'Ride height: As low as possible',
+      'Springs: Medium-Firm',
+      'Ride height: Minimum possible',
       'Brake bias: 56–58% front',
       'Rear diff accel: 25–40%',
       'Rear diff decel: 10–15%',
-      'Final drive: Optimised to track — not hitting limiter on straights',
-      'Tyre pressure: 32–35 psi both ends',
+      'Tyre pressure: 32–35 psi',
     ];
-    return `
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">✅</span><span class="gb-title">Final build checklist — ${d ? d.toUpperCase() : 'your build'} / ${dr||'?'} / Class ${cl||'?'}</span></div>
-      <div class="gb-body">
-        <p>Tick these off as you set them in-game. Click each item to mark it done.</p>
-        <ul class="checklist" id="checklist">
-          ${checks.map((c,i)=>`<li class="cl-item ${state.checks[i]?'checked-item':''}" onclick="toggleCheck(${i})">
-            <input type="checkbox" ${state.checks[i]?'checked':''} onclick="event.stopPropagation();toggleCheck(${i})">
-            <span>${c}</span>
-          </li>`).join('')}
-        </ul>
-        <div style="margin-top:16px;font-family:var(--mono);font-size:12px;color:var(--muted)">
-          ${Object.values(state.checks).filter(Boolean).length} / ${checks.length} complete
-        </div>
-      </div>
+    const doneCount=Object.values(gWiz.checks).filter(Boolean).length;
+    return {
+    hint:`<p>Before you head out on track, run through this checklist. These are the key things to confirm are installed and set correctly.</p>
+    <p>You don't have to be perfect — the whole point is to get out there, feel what the car does, then come back and adjust one thing at a time.</p>
+    <div class="hbox hbox-good"><strong>THE RULE //</strong> Change one setting at a time. Test on the same route. Then decide if it helped.</div>
+    <div style="margin-top:14px;font-size:13px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text)">Order to fix handling problems:</strong><br>
+      Tyres → Ride height → Camber → ARBs → Springs → Diff → Dampers → Aero
     </div>
-    <div class="guide-block">
-      <div class="gb-head"><span class="gb-icon">🏁</span><span class="gb-title">Test and iterate</span></div>
-      <div class="gb-body">
-        <p><strong>Always test on the same route.</strong> Pick one track or road and use it every time you make a change. You can't feel the difference if you're on a different surface each run.</p>
-        <p><strong>Change one thing at a time.</strong> If you change the springs AND the camber AND the diff at the same time, you don't know what actually helped.</p>
-        <p><strong>The order to fix handling problems:</strong><br>
-          Tyres → Ride height → Camber → ARBs → Springs → Diff → Dampers → Aero
-        </p>
-        <div class="tip-box"><strong>YOU'RE DONE //</strong> Save your tune in Forza, note what you changed, and get on track. Tuning is an ongoing process — every track and car teaches you something new.</div>
-      </div>
-    </div>`;
-
-  default: return '<p>Step content coming soon.</p>';
+    <div style="margin-top:12px;font-size:13px;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--text)">After driving:</strong> come back to the Garage tab to edit specific values. Every field is editable. Use the <em>Build notes</em> section to log what you changed and how it felt.
+    </div>`,
+    fields:`<div class="field-group">
+      <div class="fg-label">Pre-drive checklist — ${doneCount} / ${chks.length} done</div>
+      <ul class="cl-ul">${chks.map((c,i)=>`<li class="cl-li ${gWiz.checks[i]?'ck':''}" onclick="gWiz.checks[${i}]=!gWiz.checks[${i}];renderGuide()">
+        <input type="checkbox" ${gWiz.checks[i]?'checked':''} onclick="event.stopPropagation();gWiz.checks[${i}]=!gWiz.checks[${i}];renderGuide()"><span>${esc(c)}</span>
+      </li>`).join('')}</ul>
+    </div>
+    ${doneCount===chks.length?`<div class="finish-banner"><div><div class="fb-text">✓ All checks done — ready to drive!</div><div class="fb-sub">Hit "Done" below to save and go to your build in the garage.</div></div><button class="btn suc" onclick="finishGuide()">✓ Save &amp; go to garage</button></div>`:''}
+    `};
   }
+
+  return {hint:'',fields:''};
 }
 
-function getSidebarContent() {
-  const d = state.discipline;
-  const dr = state.drivetrain;
-  const cl = state.carClass;
-
-  const labels = { discipline:d||'—', drivetrain:dr||'—', carClass:cl||'—' };
-  const piMap = { D:'100–300',C:'301–400',B:'401–500',A:'501–600',S1:'601–700',S2:'701–800',R:'801–900',X:'901–999' };
-  const pi = cl ? piMap[cl] : '—';
-  const piFill = cl ? { D:12,C:24,B:36,A:48,S1:62,S2:74,R:88,X:100 }[cl] : 0;
-
-  return `
-    <div class="sidebar-section">
-      <div class="ss-label">Your build</div>
-      <div class="summary-card">
-        <div class="sum-row"><span class="sum-key">Discipline</span><span class="sum-val ${!d?'na':''}">${d ? d.charAt(0).toUpperCase()+d.slice(1) : '—'}</span></div>
-        <div class="sum-row"><span class="sum-key">Drivetrain</span><span class="sum-val ${!dr?'na':''}">${dr||'—'}</span></div>
-        <div class="sum-row"><span class="sum-key">Class</span><span class="sum-val ${!cl?'na':''}">${cl||'—'}</span></div>
-        <div class="sum-row"><span class="sum-key">PI range</span><span class="sum-val ${!cl?'na':''}" style="color:var(--yellow)">${pi}</span></div>
-        ${cl ? `<div class="pi-bar-wrap"><div class="pi-label"><span>D</span><strong>${pi}</strong><span>X</span></div><div class="pi-bar"><div class="pi-fill" style="width:${piFill}%"></div></div></div>` : ''}
-      </div>
-    </div>
-    <div class="sidebar-section">
-      <div class="ss-label">Tuning priority for this build</div>
-      ${!d ? '<div style="font-size:12px;color:var(--hint)">Choose discipline to see priorities</div>' :
-      `<div class="summary-card">
-        ${(d==='drift' ? [['Tyres','🔴 Critical'],['Diff (rear accel)','🔴 Critical'],['Camber + Caster','🔴 Critical'],['ARBs','🟡 Important'],['Springs','🟡 Important'],['Aero','⚪ Minimal']] :
-          d==='drag' ? [['Tyres','🔴 Critical'],['Diff (rear accel)','🔴 Critical'],['Launch RPM','🔴 Critical'],['Gearing','🟡 Important'],['Springs','🟡 Important'],['Camber','⚪ Zero']] :
-          d==='dirt' ? [['Tyres','🔴 Critical'],['Ride height','🔴 Critical'],['Springs (soft)','🔴 Critical'],['Diff','🟡 Important'],['Camber (low)','🟡 Important'],['Aero','⚪ Minimal']] :
-          [['Tyres','🔴 Critical'],['Diff accel','🟡 Important'],['Camber','🟡 Important'],['ARBs','🟡 Important'],['Aero (high class)','🟡 Important'],['Gearing','⚪ Fine-tune']]).map(([k,v])=>`<div class="sum-row"><span class="sum-key">${k}</span><span style="font-size:11px;color:var(--muted)">${v}</span></div>`).join('')}
-      </div>`}
-    </div>
-    <div class="sidebar-section">
-      <div class="ss-label">Quick reference</div>
-      <div class="summary-card">
-        <div style="font-size:11px;color:var(--muted);line-height:1.8;font-family:var(--mono)">
-          ${d==='drift' ? 'FD Supercharger<br>Sport/Semi-slick tyres<br>Max caster (7°)<br>Low front ARB<br>High rear ARB<br>100% rear diff accel' :
-           d==='drag' ? 'Max rear diff lock<br>0° camber both ends<br>Soft front / stiff rear<br>Short 1st gear<br>Slick tyres<br>Remove all aero' :
-           d==='dirt' ? 'Rally tyres<br>Max ride height<br>Soft springs + ARBs<br>60–70% rear diff<br>Light camber<br>Soft damping' :
-           'Race tyres<br>Medium-Firm springs<br>-1.0–1.5° camber<br>30–40% rear diff accel<br>56–58% brake bias<br>Optimised final drive'}
-        </div>
-      </div>
-    </div>`;
+/* ══════════════════════════════════
+   EXPORT / IMPORT
+══════════════════════════════════ */
+function exportDB(){
+  const b=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='fh6-garage-'+new Date().toISOString().slice(0,10)+'.json';a.click();toast('Exported!');
+}
+function importDB(e){
+  const file=e.target.files[0];if(!file)return;
+  const r=new FileReader();
+  r.onload=ev=>{try{const data=JSON.parse(ev.target.result);if(!data.cars)throw 0;
+    if(confirm(`Import ${data.cars.length} build(s)? OK=merge, Cancel=replace all.`))db.cars=[...db.cars,...data.cars];
+    else db=data;persist();renderList();toast('Imported!');
+  }catch{alert('Invalid file.')}};
+  r.readAsText(file);e.target.value='';
 }
 
-/* ══ RENDER ══ */
-function renderAll() {
-  const stepId = steps[state.step].id;
-
-  // Nav steps
-  document.getElementById('navSteps').innerHTML = steps.map((s,i)=>`
-    <div class="step-pill ${i===state.step?'active':''} ${isDone(i)?'done':''}" onclick="goStep(${i})">${s.icon} ${s.label}</div>`).join('');
-
-  // Sidebar
-  document.getElementById('sidebar').innerHTML = getSidebarContent();
-
-  // Main
-  const s = steps[state.step];
-  document.getElementById('main').innerHTML = `
-    <div class="step-header">
-      <div class="step-num">Step ${state.step+1} of ${steps.length} — ${s.label.toUpperCase()}</div>
-      <div class="step-title">${s.title}</div>
-      ${state.step > 0 && !state.discipline ? '<div class="step-desc" style="color:var(--yellow)">↩ Pick a discipline on step 1 to get personalised advice.</div>' : ''}
-    </div>
-    ${getContent(stepId)}
-    <div class="nav-btns">
-      <button class="btn" onclick="goStep(${state.step-1})" ${state.step===0?'disabled':''}>← Back</button>
-      <button class="btn primary" onclick="goStep(${state.step+1})" ${state.step===steps.length-1?'disabled':''}>Next →</button>
-    </div>
-  `;
-}
-
-function isDone(i) {
-  const id = steps[i].id;
-  if (id==='discipline') return !!state.discipline;
-  if (id==='drivetrain') return !!state.drivetrain;
-  if (id==='class') return !!state.carClass;
-  if (id==='checklist') return Object.values(state.checks).some(Boolean);
-  return state.step > i;
-}
-
-function goStep(i) {
-  if (i<0 || i>=steps.length) return;
-  state.step = i;
-  renderAll();
-  document.getElementById('main').scrollTop = 0;
-}
-
-function pick(field, val) {
-  state[field] = val;
-  state.checks = {};
-}
-
-function toggleCheck(i) {
-  state.checks[i] = !state.checks[i];
-  renderAll();
-}
-
-function resetGuide() {
-  state.step=0; state.discipline=null; state.drivetrain=null; state.carClass=null; state.engine=null; state.checks={};
-  renderAll();
-}
-
-renderAll();
+/* ══════════════════════════════════
+   BOOT
+══════════════════════════════════ */
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+document.getElementById('addModal').addEventListener('click',e=>{if(e.target===e.currentTarget)closeModal()});
+document.getElementById('newName').addEventListener('keydown',e=>{if(e.key==='Enter')createBuild()});
+renderList();
 </script>
 </body>
 </html>
