@@ -333,6 +333,7 @@ function setTab(t){
   const tbA=document.getElementById('tbActions');
   if(t==='guide'){
     tbA.innerHTML=`<div class="sync-dot ok" id="syncDot"></div><button class="btn dan" onclick="cancelGuide()">✕ Cancel</button>`;
+    renderGuide();
   } else {
     tbA.innerHTML=`<div class="sync-dot ok" id="syncDot"></div><button class="btn" onclick="exportDB()">Export</button><button class="btn" onclick="document.getElementById('importFile').click()">Import</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importDB(event)"><button class="btn pri" onclick="startNewBuild()">+ New build</button>`;
   }
@@ -507,7 +508,19 @@ function gStep(i){if(i<0||i>=STEPS.length)return;gWiz.step=i;renderGuide();docum
 function gDone(i){return gWiz.step>i}
 
 function renderGuide(){
-  const car=gCar();if(!car)return;
+  const car=gCar();
+  if(!car){
+    document.getElementById('gpSteps').innerHTML='';
+    document.getElementById('gpBody').innerHTML=`
+    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding:40px;text-align:center;color:var(--muted)">
+      <div style="font-size:48px;opacity:.12">🔧</div>
+      <div style="font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">No build loaded</div>
+      <div style="font-size:13px;max-width:360px;line-height:1.7">The build wizard walks you through every tuning step with hints and suggested values as you go.<br><br>Start by creating a new build — the wizard opens automatically.</div>
+      <button class="btn pri" onclick="cancelGuide();startNewBuild()" style="font-size:13px;padding:8px 24px">+ Start a new build</button>
+      ${db.cars.length?`<div style="font-size:12px;color:var(--hint);margin-top:4px">or pick an existing build from the garage and hit <span style="color:var(--accent3)">🔧 Refine in wizard</span></div>`:''}
+    </div>`;
+    return;
+  }
   const d=car.type; const dr=car.drivetrain||'RWD'; const cl=car.carClass;
   const isD=d==='drift'; const isDr=d==='drag'; const isDt=d==='dirt';
   const hCl=['S1','S2','R','X'].includes(cl);
