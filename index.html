@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FH6 Tuning Sheet</title>
+<style>
+  :root {
+    --bg: #0d0f14;
+    --bg2: #141720;
+    --bg3: #1a1e2a;
+    --border: #2a2f3d;
+    --border2: #3a4055;
+    --text: #e8eaf0;
+    --muted: #6b7290;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --green: #00c896;
+    --yellow: #f5c842;
+    --red: #ff4d6d;
+    --font-mono: 'Courier New', monospace;
+    --font-main: 'Segoe UI', system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font-main); font-size: 14px; min-height: 100vh; }
+
+  /* HEADER */
+  .top-bar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 24px; display: flex; align-items: center; justify-content: space-between; height: 56px; }
+  .logo { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.1em; color: var(--accent); }
+  .logo span { color: var(--muted); }
+  .top-actions { display: flex; gap: 8px; }
+  .btn { background: transparent; border: 1px solid var(--border2); color: var(--text); padding: 6px 14px; border-radius: 4px; font-size: 12px; cursor: pointer; font-family: var(--font-mono); letter-spacing: 0.05em; transition: all 0.15s; }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.primary { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 600; }
+  .btn.primary:hover { opacity: 0.85; }
+  .btn.danger { border-color: var(--red); color: var(--red); }
+  .btn.danger:hover { background: var(--red); color: #fff; }
+
+  /* LAYOUT */
+  .layout { display: grid; grid-template-columns: 280px 1fr; height: calc(100vh - 56px); overflow: hidden; }
+
+  /* SIDEBAR */
+  .sidebar { background: var(--bg2); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .sidebar-head { padding: 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-head h2 { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 10px; }
+  select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 8px 10px; border-radius: 4px; font-size: 13px; font-family: var(--font-main); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7290' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; }
+  select:focus { outline: none; border-color: var(--accent); }
+  select option { background: var(--bg3); }
+
+  /* CAR LIST */
+  .car-list { flex: 1; overflow-y: auto; padding: 8px; }
+  .car-list::-webkit-scrollbar { width: 4px; }
+  .car-list::-webkit-scrollbar-track { background: transparent; }
+  .car-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+  .car-item { padding: 10px 12px; border-radius: 4px; cursor: pointer; border: 1px solid transparent; margin-bottom: 2px; transition: all 0.1s; }
+  .car-item:hover { background: var(--bg3); border-color: var(--border); }
+  .car-item.active { background: var(--bg3); border-color: var(--accent); }
+  .car-item-name { font-size: 13px; color: var(--text); font-weight: 500; }
+  .car-item-meta { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--font-mono); }
+  .car-item-badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 2px; font-family: var(--font-mono); font-weight: 600; margin-right: 4px; }
+  .badge-D { background: #2a2a2a; color: #888; }
+  .badge-C { background: #0a2040; color: #4a90d9; }
+  .badge-B { background: #0a2a15; color: #4abd7a; }
+  .badge-A { background: #2a1a00; color: #e09010; }
+  .badge-S1 { background: #2a0a00; color: #e05030; }
+  .badge-S2 { background: #2a001a; color: #cc4488; }
+  .badge-R { background: #1a0a2a; color: #9966dd; }
+  .badge-X { background: #1a1a00; color: #ddcc00; }
+  .no-cars { padding: 24px 12px; text-align: center; color: var(--muted); font-size: 12px; font-family: var(--font-mono); }
+  .add-car-row { padding: 10px; border-top: 1px solid var(--border); }
+
+  /* MAIN PANEL */
+  .main { overflow-y: auto; background: var(--bg); }
+  .main::-webkit-scrollbar { width: 6px; }
+  .main::-webkit-scrollbar-track { background: transparent; }
+  .main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+  .empty-state { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 16px; color: var(--muted); }
+  .empty-state .big { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* TUNE SHEET */
+  .sheet { padding: 24px; max-width: 900px; }
+  .sheet-header { margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--border); }
+  .sheet-title { display: flex; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .car-name-display { font-family: var(--font-mono); font-size: 20px; font-weight: 700; color: var(--text); letter-spacing: 0.05em; }
+  .car-name-display input { background: transparent; border: none; border-bottom: 1px solid var(--border2); color: var(--text); font-family: var(--font-mono); font-size: 20px; font-weight: 700; letter-spacing: 0.05em; width: 100%; padding: 2px 0; }
+  .car-name-display input:focus { outline: none; border-color: var(--accent); }
+  .sheet-meta { margin-top: 10px; display: flex; gap: 16px; flex-wrap: wrap; align-items: center; }
+  .meta-field { display: flex; align-items: center; gap: 6px; }
+  .meta-label { font-size: 11px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; }
+  .meta-select { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 3px; font-size: 12px; font-family: var(--font-mono); cursor: pointer; }
+  .meta-select:focus { outline: none; border-color: var(--accent); }
+  .meta-input { background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 3px; font-size: 12px; font-family: var(--font-mono); width: 120px; }
+  .meta-input:focus { outline: none; border-color: var(--accent); }
+
+  /* MEMORY HOOK */
+  .memory-hook { background: var(--bg2); border: 1px solid var(--border); border-left: 3px solid var(--accent2); border-radius: 4px; padding: 10px 14px; margin-bottom: 20px; font-family: var(--font-mono); font-size: 11px; color: var(--accent2); letter-spacing: 0.06em; }
+  .memory-hook span { color: var(--muted); }
+
+  /* SECTIONS */
+  .section { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 16px; overflow: hidden; }
+  .section-title { background: var(--bg3); padding: 10px 16px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; color: var(--accent); text-transform: uppercase; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .section-title::before { content: ''; width: 6px; height: 6px; background: var(--accent); border-radius: 50%; display: inline-block; }
+  .section-body { padding: 16px; }
+  .tune-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
+  .tune-cell { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+  .tune-cell-label { font-size: 10px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .tune-cell-input { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border2); color: var(--accent); font-family: var(--font-mono); font-size: 15px; font-weight: 700; padding: 2px 0; }
+  .tune-cell-input:focus { outline: none; border-color: var(--accent); color: var(--text); }
+  .tune-cell-sub { font-size: 10px; color: var(--muted); margin-top: 4px; }
+
+  /* NOTES */
+  .notes-area { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); font-family: var(--font-mono); font-size: 12px; padding: 12px; border-radius: 4px; resize: vertical; min-height: 80px; line-height: 1.6; }
+  .notes-area:focus { outline: none; border-color: var(--accent); }
+
+  /* QUICK FIX */
+  .fix-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px; }
+  .fix-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 10px 12px; }
+  .fix-problem { font-size: 10px; color: var(--red); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .fix-solution { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .fix-solution li { list-style: none; padding-left: 12px; position: relative; }
+  .fix-solution li::before { content: '↑'; position: absolute; left: 0; color: var(--green); font-size: 10px; }
+  .fix-solution li.down::before { content: '↓'; color: var(--red); }
+
+  /* DISCIPLINE TIPS */
+  .tip-strip { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tip-pill { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border2); color: var(--muted); cursor: pointer; font-family: var(--font-mono); transition: all 0.1s; }
+  .tip-pill.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,255,0.05); }
+  .tip-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 4px; padding: 12px 14px; font-size: 12px; color: var(--muted); line-height: 1.6; min-height: 60px; }
+
+  /* SAVE INDICATOR */
+  .save-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; margin-left: 6px; transition: background 0.3s; }
+  .save-dot.saved { background: var(--green); }
+  .save-dot.unsaved { background: var(--yellow); }
+
+  /* MODAL */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px; padding: 24px; width: 420px; }
+  .modal h3 { font-family: var(--font-mono); font-size: 13px; letter-spacing: 0.08em; color: var(--accent); margin-bottom: 16px; }
+  .modal label { font-size: 11px; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.07em; display: block; margin-bottom: 4px; margin-top: 12px; }
+  .modal input, .modal select { width: 100%; background: var(--bg3); border: 1px solid var(--border2); color: var(--text); padding: 8px 10px; border-radius: 4px; font-size: 13px; font-family: var(--font-mono); }
+  .modal input:focus, .modal select:focus { outline: none; border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 8px; margin-top: 20px; justify-content: flex-end; }
+
+  /* TOAST */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--bg2); border: 1px solid var(--green); color: var(--green); font-family: var(--font-mono); font-size: 12px; padding: 10px 16px; border-radius: 4px; z-index: 200; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
+  .toast.show { opacity: 1; }
+
+  @media (max-width: 700px) {
+    .layout { grid-template-columns: 1fr; }
+    .sidebar { height: auto; max-height: 40vh; }
+    .main { height: auto; }
+  }
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <div class="logo">FH6<span> // </span>TUNING DATABASE</div>
+  <div class="top-actions">
+    <span class="save-dot" id="saveDot" title="Save status"></span>
+    <button class="btn" onclick="exportJSON()">Export JSON</button>
+    <button class="btn" onclick="importTrigger()">Import JSON</button>
+    <input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+    <button class="btn primary" onclick="openAddCar()">+ Add car</button>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar">
+    <div class="sidebar-head">
+      <h2>Cars in garage</h2>
+      <select id="filterClass" onchange="renderList()">
+        <option value="">All classes</option>
+        <option value="D">Class D</option>
+        <option value="C">Class C</option>
+        <option value="B">Class B</option>
+        <option value="A">Class A</option>
+        <option value="S1">Class S1</option>
+        <option value="S2">Class S2</option>
+        <option value="R">Class R</option>
+        <option value="X">Class X</option>
+      </select>
+    </div>
+    <div class="car-list" id="carList"></div>
+    <div class="add-car-row">
+      <button class="btn" style="width:100%" onclick="openAddCar()">+ New build</button>
+    </div>
+  </div>
+
+  <div class="main" id="mainPanel">
+    <div class="empty-state">
+      <div style="font-size:36px;opacity:0.15">⚙</div>
+      <div class="big">No car selected</div>
+      <div style="font-size:12px">Add a car or select one from the garage</div>
+      <button class="btn primary" onclick="openAddCar()" style="margin-top:8px">+ Add your first build</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD CAR MODAL -->
+<div class="modal-overlay" id="addModal">
+  <div class="modal">
+    <h3>// NEW BUILD</h3>
+    <label>Car name</label>
+    <input type="text" id="newCarName" placeholder="e.g. Nissan Silvia S15" autocomplete="off">
+    <label>Car class</label>
+    <select id="newCarClass">
+      <option value="D">D</option><option value="C">C</option><option value="B">B</option>
+      <option value="A">A</option><option value="S1">S1</option><option value="S2">S2</option>
+      <option value="R">R</option><option value="X">X</option>
+    </select>
+    <label>Discipline</label>
+    <select id="newCarType">
+      <option value="drift">Drift</option><option value="street">Street / Road</option>
+      <option value="drag">Drag</option><option value="dirt">Dirt / Rally</option>
+      <option value="cross">Cross-country</option><option value="offroad">Off-road</option>
+    </select>
+    <label>PI rating</label>
+    <input type="text" id="newCarPI" placeholder="e.g. 850">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn primary" onclick="addCar()">Create build</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'fh6_tuning_v2';
+let db = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{"cars":[]}');
+let currentId = null;
+let saveTimeout = null;
+
+const tipData = {
+  drift: {
+    "Won't initiate slide": "↓ front ARB stiffness\n↓ front diff accel\n↓ front tyre pressure\n↓ rear springs",
+    "Won't hold angle at speed": "↑ rear camber (more negative)\n↑ downforce\n↑ front tyre pressure\n↑ front diff accel",
+    "Catches hard exiting": "↓ rear camber\n↓ rear diff accel\n↑ front diff accel",
+    "Rear steps out unexpectedly": "↑ rear diff accel lock\n↑ rear ARB stiffness\n↑ rear springs",
+    "Sluggish initiation": "Shorter final drive (+ wheel)\n↓ front diff accel\n↑ rear diff accel",
+    "Too twitchy": "↑ rear diff decel lock\n↑ rear rebound damping\n↑ rear ARB stiffness"
+  },
+  street: {
+    "Understeers in corners": "↓ front spring stiffness\n↓ front ARB\n↑ front diff accel\n↓ front ride height slightly",
+    "Oversteers on exit": "↑ rear ARB\n↑ rear spring stiffness\n↓ rear diff accel\n↑ rear tyre pressure",
+    "Car wanders on straight": "↑ caster angle\n↑ toe-in (rear)\n↑ ARB stiffness both ends",
+    "Too bouncy": "↑ rebound damping\n↑ spring stiffness\n↑ ARB stiffness",
+    "Loses traction out of corner": "↓ rear diff accel\n↑ rear tyre pressure\n↑ rear spring stiffness",
+    "Brakes lock up": "↓ front brake bias\n↑ brake pressure\n↑ tyre pressure"
+  },
+  drag: {
+    "Spins tyres on launch": "↑ rear diff accel lock\n↑ rear spring stiffness\n↓ launch RPM\n↑ rear tyre pressure",
+    "Front lifts on launch": "↑ front spring stiffness\n↓ front ride height\n↑ downforce (front)",
+    "Loses traction mid-run": "↑ rear diff lock (accel)\n↑ gearing (slightly longer)\n↑ tyre pressure",
+    "Slow 60ft time": "↓ launch RPM (find torque peak)\n↑ rear diff accel\n↓ 1st gear length",
+    "Bogging on launch": "↑ launch RPM\n↑ turbo boost (if available)",
+    "Wheel spin in 2nd gear": "↑ rear diff lock\n↑ rear spring\n↑ tyre pressure"
+  },
+  dirt: {
+    "Car slides wide on gravel": "↑ rear diff accel\n↑ rear ARB slightly\n↑ rear rebound damping",
+    "Too bouncy on rough ground": "↓ spring stiffness\n↑ bump damping\n↑ ride height",
+    "Loss of traction climbing": "↑ rear diff lock (accel)\n↑ tyre pressure slightly\n↑ rear spring",
+    "Understeers on loose surface": "↑ front diff accel\n↓ front ARB\n↓ front spring",
+    "Car pitches forward under braking": "↑ rear spring stiffness\n↑ front rebound damping",
+    "Struggles on tight hairpins": "↓ rear diff accel on entry\n↑ handbrake response\n↓ rear ARB"
+  },
+  cross: {
+    "Unstable on road sections": "↑ ARB stiffness\n↑ spring stiffness\n↓ ride height slightly",
+    "Too stiff off-road": "↓ spring stiffness\n↑ ride height\n↓ ARB",
+    "Loses speed in transitions": "Optimise final drive\n↑ gear ratios tightness\n↑ diff accel",
+    "Front digs in": "↑ front diff accel\n↓ front spring\n↑ front rebound",
+    "Wallows in corners": "↑ ARB both ends\n↑ spring stiffness\n↑ bump damping",
+    "Poor traction both surfaces": "↑ diff accel (both)\n↑ tyre pressure check\n↑ rear spring"
+  },
+  offroad: {
+    "Bottoms out": "↑ ride height (max it)\n↑ spring stiffness\n↑ bump damping",
+    "Rolls in corners": "↑ ARB stiffness\n↑ spring stiffness\n↓ ride height slightly",
+    "Spins all 4 wheels": "↑ front diff accel\n↑ rear diff accel\n↓ tyre pressure",
+    "Can't climb steep terrain": "↑ rear diff lock (100%)\n↑ front diff lock\n↑ torque delivery",
+    "Bounces and loses control": "↑ bump damping\n↓ spring stiffness\n↑ rebound damping",
+    "Understeers everywhere": "↑ front diff accel\n↓ front ARB\n↓ front spring"
+  }
+};
+
+const defaultTune = (type) => ({
+  drift: {
+    tyreFront: "30", tyreRear: "32", finalDriveShort: "Short", finalDriveLong: "Long",
+    camberFront: "-2.2", camberRear: "-1.5", toeFront: "+0.1", toeRear: "+0.1", caster: "6.5",
+    arbFront: "Low", arbRear: "High/Stiff",
+    springFront: "Soft-Mid", springRear: "Stiff", rideHFront: "Low", rideHRear: "Low",
+    bumpFront: "Moderate", bumpRear: "Moderate", reboundFront: "Moderate-High", reboundRear: "Moderate",
+    aero: "Maximum", brakeBias: "Slight rear", brakePress: "100",
+    diffFront: "25", diffRearAccel: "100", diffRearDecel: "40",
+    memory: "FD Supercharger / Max rear lock / Low front ARB",
+    notes: ""
+  },
+  street: {
+    tyreFront: "34", tyreRear: "34", finalDriveShort: "Short", finalDriveLong: "Long",
+    camberFront: "-1.2", camberRear: "-0.9", toeFront: "0.0", toeRear: "+0.1", caster: "5.0",
+    arbFront: "Medium", arbRear: "Medium",
+    springFront: "Medium-Firm", springRear: "Firm", rideHFront: "Min", rideHRear: "Min",
+    bumpFront: "Medium", bumpRear: "Medium", reboundFront: "Medium", reboundRear: "Medium",
+    aero: "Medium-High", brakeBias: "57% Front", brakePress: "100",
+    diffFront: "30", diffRearAccel: "35", diffRearDecel: "15",
+    memory: "Semi-slick tyres / Medium aero / Firm springs",
+    notes: ""
+  },
+  drag: {
+    tyreFront: "36", tyreRear: "26", finalDriveShort: "Short (1st)", finalDriveLong: "Tall overall",
+    camberFront: "0.0", camberRear: "0.0", toeFront: "0.0", toeRear: "0.0", caster: "4.0",
+    arbFront: "Soft", arbRear: "Stiff",
+    springFront: "Soft", springRear: "Stiff", rideHFront: "Low", rideHRear: "High rear",
+    bumpFront: "Soft", bumpRear: "Stiff", reboundFront: "Soft", reboundRear: "Stiff",
+    aero: "None", brakeBias: "55% Front", brakePress: "80",
+    diffFront: "15", diffRearAccel: "100", diffRearDecel: "0",
+    memory: "Max rear diff lock / Zero camber / Slick tyres",
+    notes: ""
+  },
+  dirt: {
+    tyreFront: "28", tyreRear: "28", finalDriveShort: "Medium", finalDriveLong: "Longer",
+    camberFront: "-0.3", camberRear: "-0.2", toeFront: "0.0", toeRear: "+0.1", caster: "5.5",
+    arbFront: "Soft", arbRear: "Soft",
+    springFront: "Very Soft", springRear: "Soft", rideHFront: "High", rideHRear: "High",
+    bumpFront: "Soft", bumpRear: "Soft", reboundFront: "Soft", reboundRear: "Soft",
+    aero: "Low", brakeBias: "53% Front", brakePress: "90",
+    diffFront: "40", diffRearAccel: "65", diffRearDecel: "10",
+    memory: "Rally tyres / Max ride height / Soft everything",
+    notes: ""
+  },
+  cross: {
+    tyreFront: "30", tyreRear: "30", finalDriveShort: "Medium-Short", finalDriveLong: "Medium",
+    camberFront: "-0.5", camberRear: "-0.4", toeFront: "0.0", toeRear: "+0.1", caster: "5.0",
+    arbFront: "Medium", arbRear: "Medium",
+    springFront: "Medium", springRear: "Medium", rideHFront: "Medium-High", rideHRear: "Medium-High",
+    bumpFront: "Medium", bumpRear: "Medium", reboundFront: "Medium", reboundRear: "Medium",
+    aero: "Low-Medium", brakeBias: "55% Front", brakePress: "95",
+    diffFront: "35", diffRearAccel: "45", diffRearDecel: "10",
+    memory: "All-terrain tyres / Medium ride / Balanced diff",
+    notes: ""
+  },
+  offroad: {
+    tyreFront: "26", tyreRear: "26", finalDriveShort: "Short", finalDriveLong: "Medium",
+    camberFront: "0.0", camberRear: "0.0", toeFront: "0.0", toeRear: "0.0", caster: "4.0",
+    arbFront: "Min", arbRear: "Min",
+    springFront: "Min", springRear: "Min", rideHFront: "Max", rideHRear: "Max",
+    bumpFront: "Soft", bumpRear: "Soft", reboundFront: "Soft", reboundRear: "Soft",
+    aero: "None", brakeBias: "50% Front", brakePress: "85",
+    diffFront: "85", diffRearAccel: "100", diffRearDecel: "20",
+    memory: "Max ride height / Full diff lock / Off-road tyres",
+    notes: ""
+  }
+})[type] || {};
+
+function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function save() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+  const dot = document.getElementById('saveDot');
+  dot.className = 'save-dot saved';
+  setTimeout(() => { if(dot.className.includes('saved')) dot.className = 'save-dot'; }, 2000);
+}
+function markUnsaved() {
+  document.getElementById('saveDot').className = 'save-dot unsaved';
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(save, 800);
+}
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+function renderList() {
+  const filter = document.getElementById('filterClass').value;
+  const list = document.getElementById('carList');
+  const cars = db.cars.filter(c => !filter || c.carClass === filter);
+  if (!cars.length) {
+    list.innerHTML = '<div class="no-cars">No builds yet.<br>Add your first car →</div>';
+    return;
+  }
+  list.innerHTML = cars.map(c => `
+    <div class="car-item ${c.id === currentId ? 'active' : ''}" onclick="selectCar('${c.id}')">
+      <div class="car-item-name">${escHtml(c.name)}</div>
+      <div class="car-item-meta">
+        <span class="car-item-badge badge-${c.carClass}">${c.carClass}</span>
+        ${escHtml(c.type.toUpperCase())} · PI ${escHtml(c.pi || '—')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectCar(id) {
+  currentId = id;
+  renderList();
+  renderSheet();
+}
+
+function renderSheet() {
+  const car = db.cars.find(c => c.id === currentId);
+  if (!car) return;
+  const t = car.tune;
+  const tips = tipData[car.type] || {};
+  const tipKeys = Object.keys(tips);
+
+  document.getElementById('mainPanel').innerHTML = `
+    <div class="sheet">
+      <div class="sheet-header">
+        <div class="sheet-title">
+          <div class="car-name-display" style="flex:1">
+            <input type="text" value="${escAttr(car.name)}" onchange="updateField('name', this.value)" oninput="markUnsaved()">
+          </div>
+          <button class="btn danger" onclick="deleteCar('${car.id}')">Delete</button>
+        </div>
+        <div class="sheet-meta">
+          <div class="meta-field">
+            <span class="meta-label">Class</span>
+            <select class="meta-select" onchange="updateField('carClass', this.value)">
+              ${['D','C','B','A','S1','S2','R','X'].map(c=>`<option ${c===car.carClass?'selected':''}>${c}</option>`).join('')}
+            </select>
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">PI</span>
+            <input class="meta-input" type="text" value="${escAttr(car.pi||'')}" placeholder="000" onchange="updateField('pi', this.value)" oninput="markUnsaved()" style="width:80px">
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">Type</span>
+            <select class="meta-select" onchange="updateField('type', this.value)">
+              ${['drift','street','drag','dirt','cross','offroad'].map(tp=>`<option value="${tp}" ${tp===car.type?'selected':''}>${tp.charAt(0).toUpperCase()+tp.slice(1)}</option>`).join('')}
+            </select>
+          </div>
+          <div class="meta-field">
+            <span class="meta-label">Drivetrain</span>
+            <select class="meta-select" onchange="updateField('drivetrain', this.value)">
+              ${['RWD','FWD','AWD','4WD'].map(d=>`<option ${d===(car.drivetrain||'RWD')?'selected':''}>${d}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="memory-hook" id="memHook">
+        <span>MEMORY HOOK // </span>
+        <span id="memHookText" style="color:#ff6b35;cursor:pointer" onclick="editMemHook()">${escHtml(t.memory||'Click to add memory hook')}</span>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Tyres &amp; gearing</div>
+        <div class="section-body">
+          <div class="tune-grid">
+            ${tc('tyreFront','Front pressure','psi',t.tyreFront)}
+            ${tc('tyreRear','Rear pressure','psi',t.tyreRear)}
+            ${tc('finalDriveShort','Final drive — snap','short = quicker snap',t.finalDriveShort)}
+            ${tc('finalDriveLong','Final drive — sustain','longer = sustained angles',t.finalDriveLong)}
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Alignment</div>
+        <div class="section-body">
+          <div class="tune-grid">
+            ${tc('camberFront','Front camber','degrees',t.camberFront)}
+            ${tc('camberRear','Rear camber','degrees',t.camberRear)}
+            ${tc('toeFront','Front toe','+ = out',t.toeFront)}
+            ${tc('toeRear','Rear toe','+ = in',t.toeRear)}
+            ${tc('caster','Caster','degrees',t.caster)}
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Anti-roll bars</div>
+        <div class="section-body">
+          <div class="tune-grid">
+            ${tc('arbFront','Front ARB','low = rotates easier',t.arbFront)}
+            ${tc('arbRear','Rear ARB','high = more stability',t.arbRear)}
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Springs, ride height &amp; damping</div>
+        <div class="section-body">
+          <div class="tune-grid">
+            ${tc('springFront','Front spring','stiffness',t.springFront)}
+            ${tc('springRear','Rear spring','stiffness',t.springRear)}
+            ${tc('rideHFront','Front ride height','lower = faster',t.rideHFront)}
+            ${tc('rideHRear','Rear ride height','lower = faster',t.rideHRear)}
+            ${tc('bumpFront','Front bump','compression damping',t.bumpFront)}
+            ${tc('bumpRear','Rear bump','compression damping',t.bumpRear)}
+            ${tc('reboundFront','Front rebound','rebound damping',t.reboundFront)}
+            ${tc('reboundRear','Rear rebound','rebound damping',t.reboundRear)}
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Aero, brakes &amp; differentials</div>
+        <div class="section-body">
+          <div class="tune-grid">
+            ${tc('aero','Downforce','front / rear',t.aero)}
+            ${tc('brakeBias','Brake bias','% front',t.brakeBias)}
+            ${tc('brakePress','Brake pressure','%',t.brakePress)}
+            ${tc('diffFront','Front diff accel','%',t.diffFront)}
+            ${tc('diffRearAccel','Rear diff accel','% — full = max control',t.diffRearAccel)}
+            ${tc('diffRearDecel','Rear diff decel','%',t.diffRearDecel)}
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Quick fixes</div>
+        <div class="section-body">
+          <div class="tip-strip" id="tipStrip">
+            ${tipKeys.map((k,i)=>`<div class="tip-pill ${i===0?'active':''}" onclick="showTip(this,'${escAttr(k)}')">${escHtml(k)}</div>`).join('')}
+          </div>
+          <div class="tip-box" id="tipBox">${tipKeys[0] ? fmtTip(tips[tipKeys[0]]) : 'No tips for this discipline.'}</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Build notes</div>
+        <div class="section-body">
+          <textarea class="notes-area" placeholder="Write your build notes, setup history, best lap times, track-specific changes..." onchange="updateTune('notes', this.value)" oninput="markUnsaved()">${escHtml(t.notes||'')}</textarea>
+        </div>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.tune-cell-input').forEach(el => {
+    el.addEventListener('change', function() { updateTune(this.dataset.field, this.value); });
+    el.addEventListener('input', markUnsaved);
+  });
+
+  document.querySelector('.meta-select[onchange*="carClass"]').addEventListener('change', function() {
+    updateField('carClass', this.value); renderList();
+  });
+  document.querySelector('.meta-select[onchange*="type"]').addEventListener('change', function() {
+    updateField('type', this.value); setTimeout(renderSheet, 50);
+  });
+  document.querySelector('.meta-select[onchange*="drivetrain"]').addEventListener('change', function() {
+    updateField('drivetrain', this.value);
+  });
+}
+
+function tc(field, label, sub, val) {
+  return `<div class="tune-cell">
+    <div class="tune-cell-label">${escHtml(label)}</div>
+    <input class="tune-cell-input" data-field="${escAttr(field)}" type="text" value="${escAttr(val||'')}">
+    <div class="tune-cell-sub">${escHtml(sub)}</div>
+  </div>`;
+}
+
+function fmtTip(txt) {
+  return txt.split('\n').map(line => `<li class="${line.startsWith('↓')?'down':''}">${escHtml(line)}</li>`).join('');
+}
+
+function showTip(el, key) {
+  document.querySelectorAll('.tip-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  const car = db.cars.find(c => c.id === currentId);
+  const tips = tipData[car ? car.type : 'drift'] || {};
+  document.getElementById('tipBox').innerHTML = `<ul class="fix-solution">${fmtTip(tips[key]||'—')}</ul>`;
+}
+
+function editMemHook() {
+  const el = document.getElementById('memHookText');
+  const cur = el.textContent;
+  const inp = document.createElement('input');
+  inp.value = cur === 'Click to add memory hook' ? '' : cur;
+  inp.style.cssText = 'background:transparent;border:none;border-bottom:1px solid #ff6b35;color:#ff6b35;font-size:inherit;font-family:inherit;width:300px;';
+  el.replaceWith(inp);
+  inp.focus();
+  const done = () => {
+    updateTune('memory', inp.value);
+    const span = document.createElement('span');
+    span.id = 'memHookText';
+    span.style.cssText = 'color:#ff6b35;cursor:pointer';
+    span.textContent = inp.value || 'Click to add memory hook';
+    span.onclick = editMemHook;
+    inp.replaceWith(span);
+  };
+  inp.addEventListener('blur', done);
+  inp.addEventListener('keydown', e => { if(e.key==='Enter') inp.blur(); });
+}
+
+function updateField(field, val) {
+  const car = db.cars.find(c => c.id === currentId);
+  if (!car) return;
+  car[field] = val;
+  markUnsaved();
+}
+
+function updateTune(field, val) {
+  const car = db.cars.find(c => c.id === currentId);
+  if (!car) return;
+  car.tune[field] = val;
+  markUnsaved();
+}
+
+function openAddCar() {
+  document.getElementById('newCarName').value = '';
+  document.getElementById('newCarPI').value = '';
+  document.getElementById('addModal').classList.add('open');
+  setTimeout(() => document.getElementById('newCarName').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('addModal').classList.remove('open');
+}
+
+function addCar() {
+  const name = document.getElementById('newCarName').value.trim();
+  if (!name) { document.getElementById('newCarName').style.borderColor='var(--red)'; return; }
+  const carClass = document.getElementById('newCarClass').value;
+  const type = document.getElementById('newCarType').value;
+  const pi = document.getElementById('newCarPI').value;
+  const car = { id: uid(), name, carClass, type, pi, drivetrain: 'RWD', tune: defaultTune(type) };
+  db.cars.unshift(car);
+  save();
+  closeModal();
+  renderList();
+  selectCar(car.id);
+  toast('Build created: ' + name);
+}
+
+function deleteCar(id) {
+  if (!confirm('Delete this build? This cannot be undone.')) return;
+  db.cars = db.cars.filter(c => c.id !== id);
+  currentId = null;
+  save();
+  renderList();
+  document.getElementById('mainPanel').innerHTML = `<div class="empty-state"><div style="font-size:36px;opacity:0.15">⚙</div><div class="big">No car selected</div><div style="font-size:12px">Select or add a car</div></div>`;
+  toast('Build deleted.');
+}
+
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(db, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'fh6-tuning-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  toast('Exported!');
+}
+
+function importTrigger() { document.getElementById('importFile').click(); }
+
+function importJSON(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!data.cars) throw new Error('Invalid format');
+      const merge = confirm(`Import ${data.cars.length} build(s)? Click OK to merge, Cancel to replace all.`);
+      if (merge) db.cars = [...db.cars, ...data.cars];
+      else db = data;
+      save();
+      renderList();
+      toast('Imported ' + data.cars.length + ' build(s)!');
+    } catch(err) { alert('Invalid JSON file.'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function escHtml(str) {
+  return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escAttr(str) {
+  return String(str||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeModal(); });
+document.getElementById('addModal').addEventListener('click', e => { if(e.target===e.currentTarget) closeModal(); });
+document.getElementById('newCarName').addEventListener('keydown', e => { if(e.key==='Enter') addCar(); });
+
+renderList();
+</script>
+</body>
+</html>
