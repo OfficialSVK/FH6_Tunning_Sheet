@@ -195,7 +195,9 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 .modal input:focus,.modal select:focus{outline:none;border-color:var(--accent)}
 .modal-btns{display:flex;gap:7px;margin-top:16px;justify-content:flex-end}
 
-/* ── TOAST ── */
+#carPickList::-webkit-scrollbar{width:4px}
+#carPickList::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
 .toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--green);color:var(--green);font-family:var(--mono);font-size:12px;padding:8px 14px;border-radius:4px;z-index:300;opacity:0;transition:opacity .2s;pointer-events:none;max-width:260px}
 .toast.show{opacity:1}
 .toast.err{border-color:var(--red);color:var(--red)}
@@ -261,25 +263,44 @@ body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14
 
 <!-- NEW BUILD MODAL -->
 <div class="mbg" id="addModal">
-  <div class="modal">
+  <div class="modal" style="width:540px;max-height:90vh;display:flex;flex-direction:column">
     <h3>// NEW BUILD</h3>
-    <label>Car name</label>
-    <input type="text" id="newName" placeholder="e.g. Nissan Silvia S15" autocomplete="off">
-    <label>Class</label>
-    <select id="newClass"><option>D</option><option>C</option><option>B</option><option selected>A</option><option>S1</option><option>S2</option><option>R</option><option>X</option></select>
-    <label>Discipline</label>
-    <select id="newType">
-      <option value="drift">Drift</option><option value="street">Street / Circuit</option>
-      <option value="drag">Drag</option><option value="dirt">Dirt / Rally</option>
-      <option value="cross">Cross-country</option><option value="offroad">Off-road</option>
-    </select>
-    <label>Drivetrain</label>
-    <select id="newDrive"><option>RWD</option><option>AWD</option><option>FWD</option></select>
-    <label>PI Rating</label>
-    <input type="text" id="newPI" placeholder="e.g. 850">
-    <div class="modal-btns">
-      <button class="btn" onclick="closeModal()">Cancel</button>
-      <button class="btn pri" onclick="createBuild()">Start wizard →</button>
+
+    <!-- Step 1: pick car -->
+    <div id="modalStep1">
+      <label style="margin-top:0">Search car</label>
+      <input type="text" id="carSearch" placeholder="Type make or model... e.g. Nissan, Supra, R34" autocomplete="off" oninput="filterCars()" style="margin-bottom:6px">
+      <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-bottom:6px">
+        <span id="carCount">0</span> cars · or <span style="color:var(--accent);cursor:pointer" onclick="skipCarPick()">type a custom name →</span>
+      </div>
+      <div id="carPickList" style="max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:4px;background:var(--bg3)"></div>
+      <div class="modal-btns" style="margin-top:10px">
+        <button class="btn" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- Step 2: configure -->
+    <div id="modalStep2" style="display:none;overflow-y:auto;flex:1">
+      <div id="pickedCarLabel" style="font-family:var(--mono);font-size:13px;color:var(--accent);padding:8px 0 12px;border-bottom:1px solid var(--border);margin-bottom:12px"></div>
+      <label style="margin-top:0">Car name <span style="color:var(--hint)">(edit if needed)</span></label>
+      <input type="text" id="newName" placeholder="e.g. Nissan Silvia S15" autocomplete="off">
+      <label>Discipline</label>
+      <select id="newType">
+        <option value="drift">Drift</option><option value="street">Street / Circuit</option>
+        <option value="drag">Drag</option><option value="dirt">Dirt / Rally</option>
+        <option value="cross">Cross-country</option><option value="offroad">Off-road</option>
+      </select>
+      <label>Drivetrain</label>
+      <select id="newDrive"><option>RWD</option><option>AWD</option><option>FWD</option></select>
+      <label>Class <span style="color:var(--hint)">(auto-filled from car list)</span></label>
+      <select id="newClass"><option>D</option><option>C</option><option>B</option><option selected>A</option><option>S1</option><option>S2</option><option>R</option><option>X</option></select>
+      <label>PI Rating <span style="color:var(--hint)">(auto-filled from car list)</span></label>
+      <input type="text" id="newPI" placeholder="e.g. 850">
+      <div class="modal-btns">
+        <button class="btn" onclick="backToCarPick()">← Back</button>
+        <button class="btn" onclick="closeModal()">Cancel</button>
+        <button class="btn pri" onclick="createBuild()">Start wizard →</button>
+      </div>
     </div>
   </div>
 </div>
@@ -450,10 +471,13 @@ function ut(k,v){const c=db.cars.find(x=>x.id===cid);if(!c)return;c.tune[k]=v;di
    CRUD
 ══════════════════════════════════ */
 function startNewBuild(){
-  document.getElementById('newName').value='';
-  document.getElementById('newPI').value='';
+  pickedCar=null;
+  document.getElementById('carSearch').value='';
+  document.getElementById('modalStep1').style.display='block';
+  document.getElementById('modalStep2').style.display='none';
   document.getElementById('addModal').classList.add('open');
-  setTimeout(()=>document.getElementById('newName').focus(),60);
+  filterCars();
+  setTimeout(()=>document.getElementById('carSearch').focus(),60);
 }
 function closeModal(){document.getElementById('addModal').classList.remove('open')}
 function createBuild(){
@@ -919,6 +943,472 @@ function importDB(e){
     else db=data;persist();renderList();toast('Imported!');
   }catch{alert('Invalid file.')}};
   r.readAsText(file);e.target.value='';
+}
+
+/* ══════════════════════════════════
+   CAR DATABASE
+   Source: forza.net/fh6cars (May 2026)
+══════════════════════════════════ */
+const CAR_DB=[
+  // class letter extracted from "NNN X" e.g. "540 B" → class B, pi 540
+  // format: [name, class, pi, type (carType hint)]
+  ["1968 Abarth 595 esseesse","D",100,"Cult Cars"],
+  ["1980 Abarth Fiat 131","D",399,"Classic Rally"],
+  ["2016 Abarth 695 Biposto","B",540,"Hot Hatch"],
+  ["2001 Acura Integra Type R","C",471,"Retro Hot Hatch"],
+  ["2002 Acura RSX Type S","C",462,"Retro Hot Hatch"],
+  ["2022 Acura NSX Type S","S1",734,"Modern Supercars"],
+  ["2023 Acura Integra A-Spec","C",484,"Hot Hatch"],
+  ["1965 Alfa Romeo Giulia Sprint GTA Stradale","D",379,"Rare Classics"],
+  ["1965 Alfa Romeo Giulia TZ2","B",532,"Classic Racers"],
+  ["1968 Alfa Romeo 33 Stradale","B",593,"Classic Racers"],
+  ["1990 Alfa Romeo SE 048SP","R",978,"Retro Racers"],
+  ["1992 Alfa Romeo 155 Q4","C",439,"Retro Super Saloons"],
+  ["2007 Alfa Romeo 8C Competizione","A",635,"GT Cars"],
+  ["2014 Alfa Romeo 4C","A",644,"Modern Sports Cars"],
+  ["2017 Alfa Romeo Giulia Quadrifoglio","A",667,"Modern Super Saloons"],
+  ["2021 Alfa Romeo Giulia GTAm","S1",717,"Modern Super Saloons"],
+  ["2015 Alumicraft Class 10 Race Car","B",532,"Unlimited Buggies"],
+  ["2021 Alumicraft #122 Class 1 Buggy","B",571,"Unlimited Buggies"],
+  ["2022 Alumicraft #6165 Trick Truck","C",485,"Unlimited Offroad"],
+  ["2554 AMG Transport Dynamics M12S Warthog CST","A",663,"Unlimited Offroad"],
+  ["2019 Apollo Intensa Emozione","R",916,"Extreme Track Toys"],
+  ["2013 Ariel Atom 500 V8","S2",825,"Extreme Track Toys"],
+  ["2016 Ariel Nomad","A",601,"Unlimited Buggies"],
+  ["1964 Aston Martin DB5","C",416,"Rare Classics"],
+  ["2016 Aston Martin Vulcan","S2",884,"Extreme Track Toys"],
+  ["2017 Aston Martin DB11","A",679,"Super GT"],
+  ["2017 Aston Martin Vulcan AMR Pro","S2",898,"Extreme Track Toys"],
+  ["2019 Aston Martin DBS Superleggera","S1",736,"Super GT"],
+  ["2019 Aston Martin Valhalla Concept Car","R",960,"Hypercars"],
+  ["2019 Aston Martin Vantage","A",696,"GT Cars"],
+  ["2021 Aston Martin DBX","A",618,"Sports Utility Heroes"],
+  ["2022 Aston Martin Valkyrie AMR Pro","R",989,"Extreme Track Toys"],
+  ["2023 Aston Martin Valkyrie","R",924,"Hypercars"],
+  ["1984 Audi Sport quattro","B",526,"Retro Rally"],
+  ["1986 Audi Sport quattro S1","S1",726,"Rally Monsters"],
+  ["2001 Audi RS 4 Avant","B",544,"Retro Super Saloons"],
+  ["2003 Audi RS 6","B",556,"Retro Super Saloons"],
+  ["2006 Audi RS 4","B",593,"Modern Super Saloons"],
+  ["2009 Audi R8 LMS","S2",810,"Extreme Track Toys"],
+  ["2009 Audi RS 6","B",598,"Modern Super Saloons"],
+  ["2010 Audi TT RS Coupé","B",593,"Modern Sports Cars"],
+  ["2011 Audi RS 3 Sportback","B",565,"Super Hot Hatch"],
+  ["2011 Audi RS 5 Coupé","A",613,"Modern Super Saloons"],
+  ["2013 Audi R8 Coupé V10 plus","A",694,"Modern Supercars"],
+  ["2013 Audi RS 4 Avant","A",607,"Modern Super Saloons"],
+  ["2013 Audi RS 7 Sportback","A",619,"Modern Super Saloons"],
+  ["2015 Audi RS 6 Avant","A",640,"Modern Super Saloons"],
+  ["2015 Audi S1","B",527,"Hot Hatch"],
+  ["2016 Audi R8 V10 plus","S1",731,"Modern Supercars"],
+  ["2018 Audi RS 4 Avant","A",637,"Modern Super Saloons"],
+  ["2020 Audi R8 V10 performance","S1",738,"Modern Supercars"],
+  ["2020 Audi RS 3 Sedan","A",617,"Modern Super Saloons"],
+  ["2021 Audi RS 6 Avant","A",650,"Modern Super Saloons"],
+  ["2021 Audi RS 7 Sportback","A",655,"Modern Super Saloons"],
+  ["2021 Audi RS e-tron GT","A",677,"Modern Super Saloons"],
+  ["2023 Audi R8 Coupé V10 GT RWD","S1",769,"Modern Supercars"],
+  ["1965 Austin-Healey 3000 MkIII","D",352,"Classic Sports Cars"],
+  ["1993 Autozam AZ-1","D",342,"Eclectic Domestics"],
+  ["2014 BAC Mono","S1",766,"Track Toys"],
+  ["2016 Bentley Bentayga","A",612,"Sports Utility Heroes"],
+  ["2021 Bentley Continental GT Convertible","A",649,"GT Cars"],
+  ["1957 BMW Isetta 300 Export","D",100,"Cult Cars"],
+  ["1973 BMW 2002 Turbo","C",424,"Classic Sports Cars"],
+  ["1981 BMW M1","B",510,"Retro Supercars"],
+  ["1988 BMW M3","C",474,"Retro Super Saloons"],
+  ["1988 BMW M5","C",470,"Retro Super Saloons"],
+  ["1995 BMW 850CSi","C",493,"Retro Sports Cars"],
+  ["1995 BMW M5","B",516,"Retro Super Saloons"],
+  ["1997 BMW M3","B",549,"Retro Super Saloons"],
+  ["2003 BMW M5","B",580,"Retro Super Saloons"],
+  ["2005 BMW M3","B",554,"Retro Super Saloons"],
+  ["2008 BMW M3","A",608,"Modern Super Saloons"],
+  ["2008 BMW Z4 M Coupé","B",579,"Modern Sports Cars"],
+  ["2009 BMW M5","B",595,"Modern Super Saloons"],
+  ["2010 BMW M3 GTS","A",678,"Track Toys"],
+  ["2011 BMW X5 M","B",546,"Sports Utility Heroes"],
+  ["2012 BMW M5","A",652,"Modern Super Saloons"],
+  ["2014 BMW M4 Coupé","A",679,"Modern Super Saloons"],
+  ["2015 BMW i8","A",665,"Modern Sports Cars"],
+  ["2016 BMW M4 GTS","S1",711,"Track Toys"],
+  ["2019 BMW Z4 Roadster","A",634,"Modern Sports Cars"],
+  ["2020 BMW M2 Competition Coupé","A",656,"Modern Super Saloons"],
+  ["2020 BMW M8 Competition Coupé","A",684,"GT Cars"],
+  ["2021 BMW M4 Competition Coupé","A",666,"Modern Super Saloons"],
+  ["2021 BMW M4 Competition Coupé Welcome Pack","S1",800,"Modern Super Saloons"],
+  ["2022 BMW iX xDrive50","B",595,"Sports Utility Heroes"],
+  ["2022 BMW M5 CS","S1",731,"Modern Super Saloons"],
+  ["2023 BMW M2","A",647,"Modern Super Saloons"],
+  ["2023 BMW M2 Forza Edition","A",700,"Track Toys"],
+  ["2024 BMW X6 M Competition","A",672,"Sports Utility Heroes"],
+  ["1987 Buick Regal GNX","C",454,"Retro Muscle"],
+  ["2013 Cadillac XTS Limousine","D",381,"Modern Super Saloons"],
+  ["2016 Cadillac ATS-V","A",601,"Modern Muscle"],
+  ["2016 Cadillac CTS-V Sedan","A",648,"Modern Muscle"],
+  ["2022 Cadillac CT4-V Blackwing","A",650,"Modern Muscle"],
+  ["2022 Cadillac CT5-V Blackwing","S1",701,"Modern Muscle"],
+  ["2018 Can-Am Maverick X RS Turbo R","B",568,"UTV"],
+  ["2019 Casey Currie Motorsports Ultra 4 Trophy Jeep","A",641,"Unlimited Offroad"],
+  ["1953 Chevrolet Corvette","D",270,"Classic Sports Cars"],
+  ["1955 Chevrolet 150 Utility Sedan","D",221,"Rods and Customs"],
+  ["1957 Chevrolet Bel Air","D",320,"Rods and Customs"],
+  ["1960 Chevrolet Corvette","C",428,"Classic Sports Cars"],
+  ["1964 Chevrolet Impala Super Sport 409","C",427,"Rods and Customs"],
+  ["1967 Chevrolet Corvette Stingray 427","B",510,"Classic Muscle"],
+  ["1969 Chevrolet Camaro Super Sport Coupe","C",471,"Classic Muscle"],
+  ["1969 Chevrolet Nova Super Sport 396","C",431,"Classic Muscle"],
+  ["1970 Chevrolet Camaro Z28","C",430,"Classic Muscle"],
+  ["1970 Chevrolet Chevelle Super Sport 454","C",424,"Classic Muscle"],
+  ["1970 Chevrolet Corvette ZR-1","C",497,"Classic Muscle"],
+  ["1970 Chevrolet El Camino Super Sport 454","C",430,"Utility Heroes"],
+  ["1972 Chevrolet K-10 Custom","D",268,"Pickups & 4x4s"],
+  ["1979 Chevrolet Camaro Z28","D",364,"Classic Muscle"],
+  ["1988 Chevrolet Monte Carlo Super Sport","D",282,"Retro Muscle"],
+  ["1995 Chevrolet Corvette ZR-1","B",576,"Retro Muscle"],
+  ["1996 Chevrolet Impala Super Sport","C",407,"Retro Muscle"],
+  ["2002 Chevrolet Corvette Z06","A",602,"Retro Muscle"],
+  ["2009 Chevrolet Corvette ZR1","S1",712,"Modern Muscle"],
+  ["2015 Chevrolet Camaro Z/28","A",695,"Track Toys"],
+  ["2015 Chevrolet Corvette Z06","S1",755,"Modern Muscle"],
+  ["2017 Chevrolet Camaro ZL1","S1",727,"Modern Muscle"],
+  ["2018 Chevrolet Camaro ZL1 1LE","S1",728,"Track Toys"],
+  ["2019 Chevrolet Corvette ZR1","S1",778,"Track Toys"],
+  ["2020 Chevrolet Corvette Stingray Coupe","A",700,"Modern Supercars"],
+  ["2020 Chevrolet Silverado LT Trail Boss","C",449,"Pickups & 4x4s"],
+  ["2023 Chevrolet Corvette Z06","S1",763,"Track Toys"],
+  ["2024 Chevrolet Corvette E-Ray","S1",737,"Modern Supercars"],
+  ["1969 Datsun 2000 Roadster","D",323,"Classic Sports Cars"],
+  ["1970 Datsun 510","D",143,"Classic Sports Cars"],
+  ["1972 Datsun 240Z Hill Climb Beast","R",951,"Extreme Track Toys"],
+  ["2013 DeBerti Jeep Wrangler Unlimited","A",645,"Unlimited Offroad"],
+  ["2018 DeBerti Chevrolet Silverado Drift Truck","S1",707,"Drift Cars"],
+  ["2019 DeBerti Ford F-250 Transformer","B",548,"Unlimited Offroad"],
+  ["2019 DeBerti Toyota Tacoma TRD","A",636,"Unlimited Offroad"],
+  ["2012 Dodge Challenger SRT8 392","A",616,"Modern Muscle"],
+  ["2018 Dodge Challenger SRT Demon","S1",714,"Modern Muscle"],
+  ["2019 Dodge Challenger SRT Hellcat Redeye","S1",751,"Modern Muscle"],
+  ["1969 Dodge Charger R/T","C",461,"Classic Muscle"],
+  ["1970 Dodge Challenger R/T","C",455,"Classic Muscle"],
+  ["2006 Dodge Viper SRT10","A",654,"Modern Supercars"],
+  ["2013 Dodge Viper GTS","S1",721,"Modern Supercars"],
+  ["2017 Dodge Viper ACR","S1",750,"Track Toys"],
+  ["1969 Dodge Coronet Super Bee","C",420,"Classic Muscle"],
+  ["2020 Dodge Charger SRT Hellcat","S1",703,"Modern Muscle"],
+  ["2021 Dodge Durango SRT Hellcat","S1",695,"Sports Utility Heroes"],
+  ["1988 Dodge Shelby CSX","D",306,"Retro Hot Hatch"],
+  ["2014 Ferrari 458 Speciale","S1",753,"Modern Supercars"],
+  ["2016 Ferrari 488 GTB","S1",747,"Modern Supercars"],
+  ["2017 Ferrari 812 Superfast","S1",786,"Modern Supercars"],
+  ["2018 Ferrari FXX-K Evo","R",991,"Extreme Track Toys"],
+  ["2019 Ferrari 488 Pista","S1",769,"Modern Supercars"],
+  ["2020 Ferrari SF90 Stradale","R",914,"Hypercars"],
+  ["2021 Ferrari 296 GTB","S1",779,"Modern Supercars"],
+  ["2022 Ferrari 296 GTS","S1",761,"Modern Supercars"],
+  ["2023 Ferrari Purosangue","S1",741,"Sports Utility Heroes"],
+  ["1962 Ferrari 250 GTO","B",548,"Rare Classics"],
+  ["1984 Ferrari 288 GTO","B",590,"Retro Supercars"],
+  ["1987 Ferrari F40","B",597,"Retro Supercars"],
+  ["1992 Ferrari 512 TR","B",573,"Retro Supercars"],
+  ["1995 Ferrari F50","S1",704,"Retro Supercars"],
+  ["2002 Ferrari Enzo Ferrari","S1",794,"Retro Supercars"],
+  ["2009 Ferrari 430 Scuderia","A",690,"Modern Supercars"],
+  ["1957 Fiat 500","D",100,"Cult Cars"],
+  ["2016 Fiat 124 Spider Abarth","C",468,"Modern Sports Cars"],
+  ["2019 Ford Bronco R","B",560,"Unlimited Offroad"],
+  ["2021 Ford Bronco First Edition","B",504,"Pickups & 4x4s"],
+  ["2021 Ford F-150 Raptor","B",514,"Pickups & 4x4s"],
+  ["2023 Ford F-150 Raptor R","A",612,"Pickups & 4x4s"],
+  ["1965 Ford Mustang Shelby GT350","B",502,"Classic Muscle"],
+  ["1969 Ford Mustang Boss 302","C",453,"Classic Muscle"],
+  ["1971 Ford Falcon XY GTHO Phase III","C",436,"Classic Muscle"],
+  ["1985 Ford RS200","B",556,"Classic Rally"],
+  ["1992 Ford Escort RS Cosworth","C",489,"Retro Rally"],
+  ["1993 Ford SVT Cobra R","B",500,"Retro Muscle"],
+  ["2003 Ford Focus RS","B",508,"Retro Hot Hatch"],
+  ["2005 Ford GT","S1",704,"Retro Supercars"],
+  ["2009 Ford Focus RS","B",514,"Retro Hot Hatch"],
+  ["2010 Ford Shelby GT500","A",626,"Modern Muscle"],
+  ["2011 Ford F-150 SVT Raptor","C",438,"Pickups & 4x4s"],
+  ["2012 Ford Focus ST","B",510,"Hot Hatch"],
+  ["2013 Ford Shelby GT500","A",627,"Modern Muscle"],
+  ["2016 Ford Focus RS","A",604,"Super Hot Hatch"],
+  ["2016 Ford Shelby GT350R","A",666,"Track Toys"],
+  ["2017 Ford GT","R",904,"Modern Supercars"],
+  ["2017 Ford Raptor Trophy Truck","A",622,"Unlimited Offroad"],
+  ["2018 Ford Mustang RTR Spec 5","S1",709,"Drift Cars"],
+  ["2019 Ford Ranger Raptor","C",497,"Pickups & 4x4s"],
+  ["2020 Ford Mustang Shelby GT500","S1",724,"Modern Muscle"],
+  ["2021 Ford Mustang Mach-E GT","A",640,"Sports Utility Heroes"],
+  ["2022 Ford Bronco Badlands","B",520,"Pickups & 4x4s"],
+  ["2022 Ford Mustang Shelby GT500 Heritage Edition","S1",730,"Modern Muscle"],
+  ["2023 Ford Mustang GT","A",621,"Modern Muscle"],
+  ["2024 Ford Mustang Dark Horse","A",680,"Track Toys"],
+  ["2010 Hennessey Venom GT","X",963,"Hypercars"],
+  ["1969 Honda S800","D",237,"Classic Sports Cars"],
+  ["1984 Honda Civic CRX Mugen","D",381,"Retro Hot Hatch"],
+  ["1992 Honda NSX-R","B",533,"Retro Supercars"],
+  ["1997 Honda Civic Type R","C",460,"Retro Hot Hatch"],
+  ["2001 Honda S2000","B",506,"Modern Sports Cars"],
+  ["2002 Honda NSX-R","B",557,"Retro Supercars"],
+  ["2004 Honda Civic Type R","B",511,"Retro Hot Hatch"],
+  ["2015 Honda Civic Type R","A",608,"Super Hot Hatch"],
+  ["2016 Honda Civic Type R","A",602,"Super Hot Hatch"],
+  ["2017 Honda Civic Type R","A",604,"Super Hot Hatch"],
+  ["2021 Honda Civic Type R","A",624,"Super Hot Hatch"],
+  ["2022 Honda Civic Type R","A",634,"Super Hot Hatch"],
+  ["2021 Honda e","D",313,"Cult Cars"],
+  ["2019 Honda Ridgeline Baja Race Truck","A",614,"Unlimited Offroad"],
+  ["1956 Jaguar D-Type","D",448,"Classic Racers"],
+  ["1961 Jaguar E-Type S1","C",433,"Classic Sports Cars"],
+  ["2012 Jaguar XKR-S","A",645,"GT Cars"],
+  ["2015 Jaguar F-Type Project 7","A",672,"GT Cars"],
+  ["2017 Jaguar F-PACE SVR","A",617,"Sports Utility Heroes"],
+  ["2019 Jaguar F-Type SVR Coupe","S1",712,"GT Cars"],
+  ["2020 Jaguar XE SV Project 8","S1",718,"Modern Super Saloons"],
+  ["2021 Jaguar F-Type R Coupe","S1",706,"GT Cars"],
+  ["1966 Lamborghini Miura P400","B",563,"Rare Classics"],
+  ["1988 Lamborghini Countach LP5000 QV","B",575,"Retro Supercars"],
+  ["1997 Lamborghini Diablo SV","B",596,"Retro Supercars"],
+  ["2001 Lamborghini Murcielago","A",664,"Modern Supercars"],
+  ["2008 Lamborghini Reventón","S1",776,"Modern Supercars"],
+  ["2010 Lamborghini Murciélago LP 670-4 SuperVeloce","S1",759,"Modern Supercars"],
+  ["2011 Lamborghini Gallardo LP 570-4 Superleggera","S1",713,"Modern Supercars"],
+  ["2013 Lamborghini Veneno","S2",847,"Hypercars"],
+  ["2014 Lamborghini Huracán LP 610-4","S1",734,"Modern Supercars"],
+  ["2016 Lamborghini Centenario LP 770-4","R",905,"Hypercars"],
+  ["2017 Lamborghini Huracán Performante","S1",771,"Modern Supercars"],
+  ["2018 Lamborghini Huracán STO","S1",779,"Modern Supercars"],
+  ["2019 Lamborghini Urus","A",673,"Sports Utility Heroes"],
+  ["2020 Lamborghini Sián FKP 37","R",905,"Hypercars"],
+  ["2021 Lamborghini Countach LPI 800-4","S2",830,"Hypercars"],
+  ["2023 Lamborghini Revuelto","R",906,"Hypercars"],
+  ["1970 Land Rover Range Rover","D",246,"Pickups & 4x4s"],
+  ["2018 Land Rover Defender Works V8","A",634,"Pickups & 4x4s"],
+  ["2020 Land Rover Defender 110","B",518,"Pickups & 4x4s"],
+  ["2020 Land Rover Defender 90","B",504,"Pickups & 4x4s"],
+  ["2021 Land Rover Defender 90 V8","A",651,"Pickups & 4x4s"],
+  ["2022 Land Rover Range Rover Sport SVR","A",657,"Sports Utility Heroes"],
+  ["2008 Lancia Delta HF Integrale","C",491,"Retro Rally"],
+  ["1966 Lotus Cortina","D",361,"Rare Classics"],
+  ["2010 Lotus Evora S","B",565,"Modern Sports Cars"],
+  ["2012 Lotus Exige S","B",578,"Track Toys"],
+  ["1967 Mazda Cosmo Sport","D",274,"Classic Sports Cars"],
+  ["1994 Mazda MX-5 Miata","C",415,"Classic Sports Cars"],
+  ["2002 Mazda RX-7 Spirit R","B",556,"Modern Sports Cars"],
+  ["2005 Mazda Mazdaspeed MX-5","B",508,"Modern Sports Cars"],
+  ["2015 Mazda MX-5","B",517,"Modern Sports Cars"],
+  ["2020 Mazda MX-5 Miata","B",522,"Modern Sports Cars"],
+  ["2022 Mazda MX-5 RF","B",538,"Modern Sports Cars"],
+  ["1970 Mercedes-Benz 300 SL","D",350,"Rare Classics"],
+  ["1955 Mercedes-Benz 300 SLR Uhlenhaut Coupé","A",641,"Classic Racers"],
+  ["1986 Mercedes-Benz 190 E 2.5-16 Evolution I","C",450,"Retro Super Saloons"],
+  ["1990 Mercedes-Benz 190 E 2.5-16 Evolution II","B",518,"Retro Super Saloons"],
+  ["2000 Mercedes-Benz CLK GTR AMG","S2",839,"Retro Supercars"],
+  ["2006 Mercedes-Benz CLK Black Series","A",638,"GT Cars"],
+  ["2009 Mercedes-Benz SL 65 AMG Black Series","S1",727,"Modern Super Saloons"],
+  ["2010 Mercedes-Benz SLS AMG","S1",715,"Modern Supercars"],
+  ["2012 Mercedes-Benz C 63 AMG Coupé Black Series","S1",727,"Track Toys"],
+  ["2013 Mercedes-Benz A 45 AMG","A",607,"Super Hot Hatch"],
+  ["2014 Mercedes-Benz GLA 45 AMG","A",620,"Sports Utility Heroes"],
+  ["2015 Mercedes-AMG GT S","S1",726,"Modern Supercars"],
+  ["2016 Mercedes-AMG C 63 S Coupé","A",670,"Modern Super Saloons"],
+  ["2018 Mercedes-AMG GT 63 S","S1",713,"Modern Super Saloons"],
+  ["2018 Mercedes-AMG GLE 63 S Coupé","A",643,"Sports Utility Heroes"],
+  ["2019 Mercedes-AMG A 35","B",583,"Super Hot Hatch"],
+  ["2020 Mercedes-AMG A 45 S","A",636,"Super Hot Hatch"],
+  ["2020 Mercedes-AMG GLC 63 S Coupé","A",645,"Sports Utility Heroes"],
+  ["2020 Mercedes-AMG GT Black Series","S2",844,"Extreme Track Toys"],
+  ["2021 Mercedes-AMG E 63 S","S1",703,"Modern Super Saloons"],
+  ["2022 Mercedes-AMG GT 63 S E Performance","S1",741,"Modern Super Saloons"],
+  ["2022 Mercedes-AMG SL 63","S1",700,"GT Cars"],
+  ["2023 Mercedes-AMG GT 63 S 4MATIC+","S1",718,"GT Cars"],
+  ["2015 MINI Cooper S","B",500,"Hot Hatch"],
+  ["2012 MINI John Cooper Works GP","B",534,"Hot Hatch"],
+  ["2019 MINI Cooper S Countryman All4","B",511,"Sports Utility Heroes"],
+  ["2021 MINI Electric","C",390,"Hot Hatch"],
+  ["1991 Mitsubishi Galant VR-4","C",453,"Retro Super Saloons"],
+  ["1995 Mitsubishi Eclipse GSX","B",503,"Retro Hot Hatch"],
+  ["1997 Mitsubishi GTO","B",519,"Retro Supercars"],
+  ["1999 Mitsubishi Lancer Evolution VI GSR","B",531,"Retro Rally"],
+  ["2004 Mitsubishi Lancer Evolution VIII","B",547,"Retro Rally"],
+  ["2006 Mitsubishi Lancer Evolution IX","B",549,"Retro Rally"],
+  ["2008 Mitsubishi Lancer Evolution X GSR","B",563,"Retro Rally"],
+  ["2019 Nissan 370Z Nismo","A",601,"Modern Sports Cars"],
+  ["1969 Nissan Fairlady Z 432","D",348,"Classic Sports Cars"],
+  ["1971 Nissan Skyline GT-R (KPGC10)","C",459,"Classic Sports Cars"],
+  ["1993 Nissan Skyline GT-R R33","B",565,"Retro Rally"],
+  ["1994 Nissan Fairlady Z Version S","B",530,"Retro Sports Cars"],
+  ["1998 Nissan R390","S2",833,"Retro Racers"],
+  ["1999 Nissan Skyline GT-R R34 V-Spec","S1",706,"Retro Rally"],
+  ["2002 Nissan Silvia Spec-R","B",520,"Retro Sports Cars"],
+  ["2003 Nissan Fairlady Z (Z33)","B",522,"Modern Sports Cars"],
+  ["2009 Nissan GT-R","S1",720,"Modern Supercars"],
+  ["2012 Nissan GT-R Black Edition","S1",740,"Modern Supercars"],
+  ["2015 Nissan GT-R Nismo","S1",754,"Modern Supercars"],
+  ["2016 Nissan GT-R Nismo","S1",756,"Modern Supercars"],
+  ["2021 Nissan GT-R Nismo Special Edition","S1",761,"Modern Supercars"],
+  ["2017 Nissan Titan Warrior Concept","A",605,"Pickups & 4x4s"],
+  ["2020 Nissan Navara AT32 Arctic Trucks","B",530,"Pickups & 4x4s"],
+  ["2022 Nissan Z","A",626,"Modern Sports Cars"],
+  ["2023 Nissan Z Nismo","A",649,"Modern Sports Cars"],
+  ["1969 Oldsmobile Hurst/Olds 442","C",454,"Classic Muscle"],
+  ["2017 Pagani Huayra BC","R",908,"Hypercars"],
+  ["2020 Pagani Huayra Roadster BC","R",921,"Hypercars"],
+  ["1993 Peugeot 106 Rallye","D",371,"Retro Hot Hatch"],
+  ["2004 Peugeot 206 Rally Car","B",546,"Rally Monsters"],
+  ["2017 Polaris RZR XP Turbo EPS","B",535,"UTV"],
+  ["2015 Porsche 918 Spyder","R",903,"Hypercars"],
+  ["1973 Porsche 911 Carrera RS","C",464,"Classic Sports Cars"],
+  ["1982 Porsche 911 Turbo 3.3","C",488,"Retro Sports Cars"],
+  ["1987 Porsche 959","B",597,"Retro Supercars"],
+  ["1989 Porsche 944 Turbo","B",530,"Retro Sports Cars"],
+  ["1993 Porsche 911 Turbo S","B",573,"Retro Supercars"],
+  ["1995 Porsche 911 GT2","B",580,"Retro Supercars"],
+  ["1997 Porsche 911 GT1 Strassenversion","S2",840,"Retro Supercars"],
+  ["2000 Porsche 911 GT3","B",574,"Retro Sports Cars"],
+  ["2003 Porsche Cayenne Turbo","A",614,"Sports Utility Heroes"],
+  ["2007 Porsche 911 GT3 RS","A",685,"Track Toys"],
+  ["2011 Porsche 918 Concept Car","S2",820,"Hypercars"],
+  ["2011 Porsche Cayenne Turbo","A",628,"Sports Utility Heroes"],
+  ["2012 Porsche 911 GT2 RS","S1",714,"Track Toys"],
+  ["2014 Porsche 918 Spyder","R",903,"Hypercars"],
+  ["2014 Porsche Cayman GT4","A",672,"Track Toys"],
+  ["2015 Porsche 911 GT3 RS","A",700,"Track Toys"],
+  ["2016 Porsche 911 GT3 RS","S1",706,"Track Toys"],
+  ["2018 Porsche 911 GT2 RS","S1",775,"Track Toys"],
+  ["2019 Porsche 911 Carrera S","A",660,"Modern Sports Cars"],
+  ["2019 Porsche 911 GT3 RS","S1",721,"Track Toys"],
+  ["2019 Porsche Cayenne Turbo","S1",703,"Sports Utility Heroes"],
+  ["2020 Porsche 911 Turbo S","S1",760,"Modern Supercars"],
+  ["2021 Porsche 911 GT3","S1",713,"Track Toys"],
+  ["2021 Porsche 911 Turbo S Cabriolet","S1",764,"Modern Supercars"],
+  ["2022 Porsche 911 GT3 RS","S1",739,"Track Toys"],
+  ["2022 Porsche Cayenne Turbo GT","S1",737,"Sports Utility Heroes"],
+  ["2022 Porsche Taycan Turbo S","S1",718,"Modern Supercars"],
+  ["2023 Porsche 911 Dakar","A",672,"Retro Rally"],
+  ["2024 Porsche 911 GT3 RS","S1",750,"Track Toys"],
+  ["2009 Radical SR8 RX","S2",845,"Track Toys"],
+  ["2015 Ram 1500 Rebel","B",504,"Pickups & 4x4s"],
+  ["2019 Ram 1500 TRX Concept","A",617,"Pickups & 4x4s"],
+  ["2021 Ram 1500 TRX","A",638,"Pickups & 4x4s"],
+  ["1992 Renault Clio Williams","C",457,"Retro Hot Hatch"],
+  ["2011 Renault Mégane R.S.","B",522,"Hot Hatch"],
+  ["2018 Renault Mégane R.S. Trophy","A",606,"Super Hot Hatch"],
+  ["2022 Renault Mégane R.S. Ultime","A",621,"Super Hot Hatch"],
+  ["2015 Rimac Concept One","S2",838,"Hypercars"],
+  ["2018 Rolls-Royce Phantom","A",617,"Modern Super Saloons"],
+  ["2019 Rolls-Royce Cullinan","A",624,"Sports Utility Heroes"],
+  ["2022 Rolls-Royce Spectre","S1",700,"GT Cars"],
+  ["1970 Shelby Cobra 427 S/C","C",496,"Classic Sports Cars"],
+  ["1965 Shelby Cobra Daytona Coupe","B",521,"Classic Sports Cars"],
+  ["2018 Subaru BRZ","B",514,"Modern Sports Cars"],
+  ["2022 Subaru BRZ","B",519,"Modern Sports Cars"],
+  ["2005 Subaru Impreza WRX STI","B",556,"Retro Rally"],
+  ["2008 Subaru Impreza WRX STI","B",565,"Retro Rally"],
+  ["2011 Subaru WRX STI","B",568,"Retro Rally"],
+  ["2015 Subaru WRX STI","B",576,"Modern Sports Cars"],
+  ["2018 Subaru WRX STI Type RA","B",579,"Modern Sports Cars"],
+  ["2022 Subaru WRX","B",562,"Modern Sports Cars"],
+  ["2001 Toyota Celica GT-FOUR ST205","B",534,"Retro Rally"],
+  ["2000 Toyota Celica GT-FOUR","B",528,"Retro Rally"],
+  ["1992 Toyota Supra 2.0 GT","B",498,"Retro Sports Cars"],
+  ["1998 Toyota Supra RZ","B",571,"Retro Sports Cars"],
+  ["2020 Toyota GR Supra","A",606,"Modern Sports Cars"],
+  ["2021 Toyota GR Yaris","B",533,"Hot Hatch"],
+  ["2022 Toyota GR86","B",534,"Modern Sports Cars"],
+  ["2022 Toyota GR Corolla Circuit Edition","A",605,"Super Hot Hatch"],
+  ["2023 Toyota GR Supra A91-MT Edition","A",617,"Modern Sports Cars"],
+  ["2020 Toyota GR Yaris","B",533,"Hot Hatch"],
+  ["1998 Toyota Land Cruiser 80","C",424,"Pickups & 4x4s"],
+  ["2020 Toyota Hilux GR-S","B",518,"Pickups & 4x4s"],
+  ["2021 Toyota Tundra TRD Pro","B",522,"Pickups & 4x4s"],
+  ["2016 TVR Griffith","A",678,"Modern Sports Cars"],
+  ["2008 Vauxhall Monaro VXR","A",601,"Modern Muscle"],
+  ["2010 Vauxhall Insignia VXR","A",597,"Modern Super Saloons"],
+  ["2012 Vauxhall Astra VXR","B",546,"Hot Hatch"],
+  ["1988 VW Golf GTI","D",378,"Retro Hot Hatch"],
+  ["1995 VW Corrado VR6","C",440,"Retro Hot Hatch"],
+  ["2003 VW Golf R32","B",509,"Retro Hot Hatch"],
+  ["2010 VW Golf R","B",543,"Hot Hatch"],
+  ["2014 VW Golf R","B",549,"Hot Hatch"],
+  ["2018 VW Golf GTI TCR","B",556,"Hot Hatch"],
+  ["2021 VW Golf R","A",601,"Hot Hatch"],
+  ["2022 VW Golf R 20 Years","A",613,"Super Hot Hatch"],
+  ["2004 VW Phaeton V10 TDI","D",348,"Modern Super Saloons"],
+  ["1963 VW Beetle","D",100,"Cult Cars"],
+  ["2021 VW ID.4 GTX","B",530,"Sports Utility Heroes"],
+  ["2019 Zenvo TSR-S","R",914,"Hypercars"],
+];
+
+/* class letter → PI range mapping for auto-suggesting class */
+function piToClass(pi){
+  if(pi<=300)return'D';if(pi<=400)return'C';if(pi<=500)return'B';
+  if(pi<=600)return'A';if(pi<=700)return'S1';if(pi<=800)return'S2';
+  if(pi<=900)return'R';return'X';
+}
+
+/* ── CAR PICKER UI ── */
+let pickedCar=null;
+
+function filterCars(){
+  const q=document.getElementById('carSearch').value.trim().toLowerCase();
+  const list=document.getElementById('carPickList');
+  const count=document.getElementById('carCount');
+  const matches=q.length<1
+    ? CAR_DB.slice(0,40)
+    : CAR_DB.filter(c=>c[0].toLowerCase().includes(q)||c[3].toLowerCase().includes(q)).slice(0,80);
+  count.textContent=q?matches.length+' results':CAR_DB.length+' total';
+  if(!matches.length){list.innerHTML='<div style="padding:12px;font-size:12px;color:var(--muted);text-align:center">No matches — type a custom name above</div>';return}
+  list.innerHTML=matches.map((c,i)=>`
+    <div onclick="pickCar(${CAR_DB.indexOf(c)})" style="padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .1s;display:flex;align-items:center;justify-content:space-between;gap:8px"
+      onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''">
+      <div>
+        <div style="font-size:13px;color:var(--text);font-weight:500">${esc(c[0])}</div>
+        <div style="font-size:10px;color:var(--muted);font-family:var(--mono);margin-top:1px">${esc(c[3])}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
+        <span class="cbadge badge-${c[1]}" style="font-size:10px">${c[1]}</span>
+        <span style="font-size:11px;color:var(--yellow);font-family:var(--mono)">${c[2]}</span>
+      </div>
+    </div>`).join('');
+}
+
+function pickCar(idx){
+  pickedCar=CAR_DB[idx];
+  document.getElementById('newName').value=pickedCar[0];
+  document.getElementById('newPI').value=pickedCar[2];
+  // set class select
+  const cs=document.getElementById('newClass');
+  for(let o of cs.options)if(o.value===pickedCar[1]){o.selected=true;break}
+  // guess drivetrain from car type hint
+  const ct=pickedCar[3].toLowerCase();
+  const dr=document.getElementById('newDrive');
+  if(ct.includes('rally')||ct.includes('buggy')||ct.includes('utv')||ct.includes('offroad')||ct.includes('4x4'))dr.value='AWD';
+  else if(ct.includes('drift'))dr.value='RWD';
+  // guess discipline
+  const tp=document.getElementById('newType');
+  if(ct.includes('drift'))tp.value='drift';
+  else if(ct.includes('rally')||ct.includes('offroad')||ct.includes('4x4')||ct.includes('buggy'))tp.value='dirt';
+  else tp.value='street';
+  // update label
+  document.getElementById('pickedCarLabel').textContent='Selected: '+pickedCar[0];
+  document.getElementById('modalStep1').style.display='none';
+  document.getElementById('modalStep2').style.display='block';
+}
+
+function skipCarPick(){
+  pickedCar=null;
+  document.getElementById('newName').value='';
+  document.getElementById('newPI').value='';
+  document.getElementById('pickedCarLabel').textContent='Custom build (no car selected)';
+  document.getElementById('modalStep1').style.display='none';
+  document.getElementById('modalStep2').style.display='block';
+}
+
+function backToCarPick(){
+  document.getElementById('modalStep1').style.display='block';
+  document.getElementById('modalStep2').style.display='none';
 }
 
 /* ══════════════════════════════════
